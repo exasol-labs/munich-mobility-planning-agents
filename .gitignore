@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+.claude/settings.local.json
+# portal download used only by scripts/prepare_dataset.py
+munich-open-data/
+munich-open-data.zip
+# the dataset is published as a GitHub release asset (see data/dataset.json), not in git
+data/*.zip
+data/*.zip.part
+data/munich-dataset/
+# secrets: never commit keys
+secrets/*
+!secrets/README.md
+!secrets/openai_api_key.example

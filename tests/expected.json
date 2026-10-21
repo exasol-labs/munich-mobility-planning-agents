@@ -1,0 +1,118 @@
+{
+  "_about": "Expected values for scripts/verify_data.py, verify_numbers.py and check_dashboard.py. Row counts: data/README.md and tutorial/02-load-data.md. Reference cases: research/reference-numbers.md (current model, revision 5). Project lists: preset_ids() in dashboards/munich-mobility-planning-v4/app.py over PT_PROJECT_STATIONS, joined sorted with ',' as the dashboard passes them.",
+  "schema": "MUNICH_DATASET",
+  "tables": {
+    "BIKE_COUNTS_15MIN": 93312,
+    "BIKE_COUNTS_DAILY": 972,
+    "BIKE_COUNT_STATIONS": 6,
+    "CYCLING_INFRASTRUCTURE": 21172,
+    "DISTRICTS": 25,
+    "DISTRICT_EMPLOYMENT": 25,
+    "DISTRICT_POPULATION": 25,
+    "LINE_CAPACITY": 23,
+    "MVV_AGENCY": 99,
+    "MVV_CALENDAR": 1734,
+    "MVV_CALENDAR_DATES": 9638,
+    "MVV_FEED_INFO": 1,
+    "MVV_ROUTES": 906,
+    "MVV_STOPS": 28330,
+    "MVV_STOP_TIMES": 2176946,
+    "MVV_TICKETING_DEEP_LINKS": 1,
+    "MVV_TRIPS": 112882,
+    "PT_PROJECT_STATIONS": 88,
+    "ROADWORKS": 5702,
+    "VEHICLE_CAPACITY": 5
+  },
+  "data_checks": [
+    {"label": "SUM(pop_2024) in DISTRICT_POPULATION", "sql": "SELECT SUM(\"pop_2024\") AS v FROM MUNICH_DATASET.DISTRICT_POPULATION", "value": 1603776},
+    {"label": "distinct projects in PT_PROJECT_STATIONS", "sql": "SELECT COUNT(DISTINCT \"project_id\") AS v FROM MUNICH_DATASET.PT_PROJECT_STATIONS", "value": 17}
+  ],
+  "project_presets": {
+    "none": "none",
+    "funded": "laim_inbound_restore,sbahn_berduxstrasse,stammstrecke2,tram_muenchner_norden_1,tram_westtangente_2,u5_pasing",
+    "everything": "laim_inbound_restore,regional_halt_poccistrasse,sbahn_augsburg_express,sbahn_berduxstrasse,sbahn_nordring_shuttle,stammstrecke2,tram_johanneskirchen,tram_muenchner_norden_1,tram_muenchner_norden_2,tram_nordtangente,tram_westtangente_2,tram_y_nord,u26_spange,u4_ost,u5_freiham,u5_pasing,u9_spange"
+  },
+  "reference_numbers": {
+    "query": "dashboards/munich-mobility-planning-v4/queries/ranking.sql",
+    "ref_weekday": "2026-10-21",
+    "_metrics": "city_places_per_1k_act, city_places_per_1k_act_2024, city_added_places: from the first row, as the app reads them. city_pct_change = (city_places_per_1k_act / city_places_per_1k_act_2024 - 1) * 100, the 'Munich overall' bar (app.py pct()). District metrics are the ranking.sql columns (service_ratio, pct_change_places, add_places, places_per_1k_act ...), looked up by district name.",
+    "cases": {
+      "R1": {
+        "title": "2024, w = 0 (per resident), no projects",
+        "params": {"year": 2024, "w_jobs": 0.0, "projects": "none", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_places_per_1k_act", "value": 60325, "tol": 0.5},
+          {"district": "Sendling-Westpark", "metric": "service_ratio", "value": 0.400, "tol": 0.0005},
+          {"district": "Altstadt-Lehel", "metric": "service_ratio", "value": 6.178, "tol": 0.0005},
+          {"district": "Untergiesing-Harlaching", "metric": "service_ratio", "value": 0.573, "tol": 0.0005}
+        ]
+      },
+      "R2": {
+        "title": "2024, w = 1 (residents + jobs), no projects",
+        "params": {"year": 2024, "w_jobs": 1.0, "projects": "none", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_places_per_1k_act", "value": 34425, "tol": 0.5},
+          {"district": "Sendling-Westpark", "metric": "service_ratio", "value": 0.496, "tol": 0.0005},
+          {"district": "Ludwigsvorstadt-Isarvorstadt", "metric": "service_ratio", "value": 1.882, "tol": 0.0005},
+          {"district": "Allach-Untermenzing", "metric": "service_ratio", "value": 0.589, "tol": 0.0005}
+        ]
+      },
+      "R3": {
+        "title": "2045, w = 1, no projects (change since 2024)",
+        "params": {"year": 2045, "w_jobs": 1.0, "projects": "none", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_pct_change", "value": -13.37, "tol": 0.005},
+          {"metric": "city_places_per_1k_act", "value": 29822, "tol": 0.5},
+          {"district": "Aubing-Lochhausen-Langwied", "metric": "pct_change_places", "value": -40.5, "tol": 0.05},
+          {"district": "Feldmoching-Hasenbergl", "metric": "pct_change_places", "value": -26.9, "tol": 0.05},
+          {"district": "Trudering-Riem", "metric": "pct_change_places", "value": -25.2, "tol": 0.05}
+        ]
+      },
+      "R4": {
+        "title": "2045, w = 1, Funded only",
+        "params": {"year": 2045, "w_jobs": 1.0, "projects": "@funded", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_pct_change", "value": -6.84, "tol": 0.005},
+          {"metric": "city_places_per_1k_act", "value": 32069, "tol": 0.5},
+          {"metric": "city_added_places", "value": 7290222, "tol": 0.5},
+          {"district": "Schwanthalerhöhe", "metric": "service_ratio", "value": 1.564, "tol": 0.0005},
+          {"district": "Neuhausen-Nymphenburg", "metric": "service_ratio", "value": 0.792, "tol": 0.0005},
+          {"district": "Laim", "metric": "service_ratio", "value": 1.566, "tol": 0.0005}
+        ]
+      },
+      "R5": {
+        "title": "2045, w = 1, Everything discussed",
+        "params": {"year": 2045, "w_jobs": 1.0, "projects": "@everything", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_pct_change", "value": -2.42, "tol": 0.005},
+          {"metric": "city_places_per_1k_act", "value": 33593, "tol": 0.5},
+          {"metric": "city_added_places", "value": 12232618, "tol": 0.5},
+          {"district": "Aubing-Lochhausen-Langwied", "metric": "service_ratio", "value": 0.851, "tol": 0.0005},
+          {"district": "Ludwigsvorstadt-Isarvorstadt", "metric": "service_ratio", "value": 2.043, "tol": 0.0005},
+          {"district": "Milbertshofen-Am Hart", "metric": "service_ratio", "value": 0.696, "tol": 0.0005}
+        ]
+      },
+      "R6": {
+        "title": "2045, w = 1, 2nd Stammstrecke only",
+        "params": {"year": 2045, "w_jobs": 1.0, "projects": "stammstrecke2", "pessimistic": 0},
+        "checks": [
+          {"metric": "city_pct_change", "value": -8.65, "tol": 0.005},
+          {"metric": "city_places_per_1k_act", "value": 31448, "tol": 0.5},
+          {"metric": "city_added_places", "value": 5272800, "tol": 0.5},
+          {"district": "Schwanthalerhöhe", "metric": "service_ratio", "value": 1.564, "tol": 0.0005},
+          {"district": "Neuhausen-Nymphenburg", "metric": "service_ratio", "value": 0.792, "tol": 0.0005},
+          {"district": "Maxvorstadt", "metric": "service_ratio", "value": 0.777, "tol": 0.0005}
+        ]
+      }
+    }
+  },
+  "dashboards": {
+    "_about": "First-load facts check_dashboard.py asserts: the map callback, called with the layout defaults, returns a choroplethmap with at least min_polygons districts, no error text, the SQL foldout id is in the layout, and (where set) the map title contains title_contains.",
+    "munich-mobility-planning-v1": {"min_polygons": 25, "sql_foldout_id": "sql-dash"},
+    "munich-mobility-planning-v2": {"min_polygons": 25, "sql_foldout_id": "sql-dash"},
+    "munich-mobility-planning-v3": {"min_polygons": 25, "sql_foldout_id": "sql-dash"},
+    "munich-mobility-planning-v4": {"min_polygons": 25, "sql_foldout_id": "sql-dash"},
+    "munich-mobility-planning-v5": {"min_polygons": 25, "sql_foldout_id": "sql-dash", "title_contains": "2026 (now)"},
+    "munich-cycling-coverage": {"min_polygons": 25, "sql_foldout_id": "sql-dash", "map_output": "covmap.figure"}
+  }
+}

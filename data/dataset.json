@@ -1,0 +1,9 @@
+{
+  "name": "munich-dataset.zip",
+  "release_tag": "data-v2",
+  "url": "https://github.com/Sheetaldharshan200/munich-mobility-agents/releases/download/data-v2/munich-dataset.zip",
+  "bytes": 18490649,
+  "sha256": "29c638b6ef399fd8c3f08f6bdbbfb186eaeffa11494db7011d27c5b6831b12f0",
+  "tables": 20,
+  "note": "Load-ready CSVs for schema MUNICH_DATASET (metric units, jobs, population forecast, project stations, reference weekday 2026-10-21). Built with scripts/prepare_dataset.py."
+}

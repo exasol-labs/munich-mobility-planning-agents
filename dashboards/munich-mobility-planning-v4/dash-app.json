@@ -1,0 +1,14 @@
+{
+  "name": "munich-mobility-planning-v4",
+  "title": "Munich Mobility Planning",
+  "route": "/apps/munich-mobility-planning-v4",
+  "description": "Munich Mobility Planning v4: forecast with rail and tram scenarios. Scheduled public transport supply against residents and jobs per district, 2024 to 2045, with project scenarios. Live Exasol dashboard backed by profile starter-kit.",
+  "template": "exasol-analytics",
+  "data_sources": {
+    "primary": {
+      "kind": "exasol",
+      "profile": "starter-kit",
+      "auth_mode": "local_direct"
+    }
+  }
+}

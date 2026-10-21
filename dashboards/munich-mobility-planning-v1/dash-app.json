@@ -1,0 +1,14 @@
+{
+  "name": "munich-mobility-planning-v1",
+  "title": "Munich Mobility Planning",
+  "route": "/apps/munich-mobility-planning-v1",
+  "description": "Munich Mobility Planning v1 – Today, per resident: scheduled public transport places offered per 1,000 residents per district against the city average. Live Exasol dashboard backed by profile starter-kit.",
+  "template": "exasol-analytics",
+  "data_sources": {
+    "primary": {
+      "kind": "exasol",
+      "profile": "starter-kit",
+      "auth_mode": "local_direct"
+    }
+  }
+}

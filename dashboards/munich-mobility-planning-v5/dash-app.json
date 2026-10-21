@@ -1,0 +1,14 @@
+{
+  "name": "munich-mobility-planning-v5",
+  "title": "Munich Mobility Planning",
+  "route": "/apps/munich-mobility-planning-v5",
+  "description": "Munich Mobility Planning v5: ask the assistant. Service map and change since 2024, managed through an Ask chat (OpenAI gpt-6-astra) that answers from SQL on MUNICH_DATASET, the dashboard's own model, the plans and the web, and runs what-ifs. Live Exasol dashboard backed by profile starter-kit.",
+  "template": "exasol-analytics",
+  "data_sources": {
+    "primary": {
+      "kind": "exasol",
+      "profile": "starter-kit",
+      "auth_mode": "local_direct"
+    }
+  }
+}
