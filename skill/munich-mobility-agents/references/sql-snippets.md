@@ -5,8 +5,8 @@ infrastructure, not answers: the joins, the score, the ranking and the interpret
 
 ## Representative weekday and the services that run on it
 
-The feed covers 2026-09-01 to 2026-11-30. The tutorial pins the reference weekday to Wednesday 21 Oct 2026 (it is a Wednesday, inside the window),
-and include the calendar exceptions.
+The feed covers 2026-09-01 to 2026-11-30. The tutorial pins the reference weekday to Wednesday 21 Oct 2026 (it is a Wednesday, inside the window)
+and includes the calendar exceptions.
 
 ```sql
 WITH feed AS (

@@ -1,6 +1,6 @@
 # What Munich is doing about the gaps (as of 15 Oct 2026)
 
-I compared the gaps found by the four agents with current city plans. The research was done in German across official sources and local media. One limit on coverage: BR, SZ, tz and Merkur block the research crawler. Their reporting is included only where the ADFC München media reviews (Radfahren in den Medien) carry it. The other media sources are Abendzeitung, t-online München, tramreport.de, VCD and Pro Bahn. Items marked (unverified) were seen only in search results, not on the source page.
+I compared the gaps found with SQL on `MUNICH_DATASET` (scheduled transport and cycle-path supply per district, roadworks near stops, the bike counters) with current city plans. The research was done in German across official sources and local media. One limit on coverage: BR, SZ, tz and Merkur block the research crawler. Their reporting is included only where the ADFC München media reviews (Radfahren in den Medien) carry it. The other media sources are Abendzeitung, t-online München, tramreport.de, VCD and Pro Bahn. Items marked (unverified) were seen only in search results, not on the source page.
 
 ## Summary
 
@@ -59,12 +59,12 @@ Impact means how severe the gap is, how many residents and departures it affects
 
 S-Bahn-Nordring, Tram Johanneskirchen and U26 are real projects but do not touch the flagged districts. I found no current debate on a Citymaut, a cable car or a maglev.
 
-## Corrections to our own analysis
+## Notes on the dataset
 
 - **Bus 68 disappears on 13 Dec 2026.** The MVV feed runs 1 Sep–30 Nov 2026 and predates the 2027 timetable, so the "bus 68: 142 roadworks" finding expires in December.
 - **Frankfurter Ring 149:** the city's end date (June 2027) is later than in our data.
 - **Nordbad:** the MVG switch project in our area ended May 2026. The open records with 2027 dates are probably the follow-on Fernwärme and track work.
-- **Erhardtstr. counter:** the leadership agent placed it in Ludwigsvorstadt-Isarvorstadt. It sits at the Au-Haidhausen border, so check the district assignment.
+- **Erhardtstr. counter:** the dataset assigns it to Ludwigsvorstadt-Isarvorstadt. It sits at the Au-Haidhausen border, so check the district assignment.
 
 ## Conflicts between sources
 

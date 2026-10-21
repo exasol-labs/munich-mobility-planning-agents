@@ -57,7 +57,7 @@ Deploy the app in dashboards/munich-mobility-planning-v4 to Dash Server as munic
 - **Set the year to 2045 and open Scenarios.** Pick "Funded only". The status line reads "Scenario: Funded only · w = 1.0 · 6 project(s) active in 2045 · +7.3 M places/day net".
 - **Step the slider back.** Projects switch on in their opening years: Tram-Westtangente and the Laim restore in 2028, Tram 23 in 2031, the 2nd Stammstrecke in 2035, U5 Pasing in 2036.
 - **Tick "Pessimistic dates".** At 2035 the 2nd Stammstrecke drops out (risk year 2037). At 2045 nothing changes, because every funded project is open by then even at its risk year.
-- **Untick one project.** The preset no longer matches, and the status line says "Custom".
+- **Untick one project.** The selection matches no preset, so the status line says "Custom".
 - **Read the badges** on each project: funded or not, verified or partly unverified, and notes such as "no stations published, adds nothing".
 - **Hover a station marker** to see its project, line and calculation method. A filled dot is a new station; a ring is an existing station gaining a line.
 - **Hover a district** to see which projects are active there and how many places they add.

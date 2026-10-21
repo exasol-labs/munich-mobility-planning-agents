@@ -41,7 +41,7 @@ CAVEAT = ("Scheduled service only (capacity offered, not passengers or delays); 
           "jobs a modelled estimate (2022 as the 2024 baseline, to 2040, held after); projects per Scenarios, their dates and frequencies are assumptions. "
           "2nd Stammstrecke: new-tunnel trains plus a 15-minute basic service on all S-Bahn lines except S2, S5, S7 and S20 "
           "(2017 concept, unverified line table; S5 is a later reinforcement line not in that concept); "
-          "old-trunk slots assumed reused.")
+          "existing-trunk slots assumed reused.")
 
 
 def wkt_to_geometry(wkt):

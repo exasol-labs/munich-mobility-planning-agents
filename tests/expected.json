@@ -1,5 +1,5 @@
 {
-  "_about": "Expected values for scripts/verify_data.py, verify_numbers.py and check_dashboard.py. Row counts: data/README.md and tutorial/02-load-data.md. Reference cases: research/reference-numbers.md (current model, revision 5). Project lists: preset_ids() in dashboards/munich-mobility-planning-v4/app.py over PT_PROJECT_STATIONS, joined sorted with ',' as the dashboard passes them.",
+  "_about": "Expected values for scripts/verify_data.py, verify_numbers.py and check_dashboard.py. Row counts: data/README.md and tutorial/02-load-data.md. Reference cases: research/reference-numbers.md. Project lists: preset_ids() in dashboards/munich-mobility-planning-v4/app.py over PT_PROJECT_STATIONS, joined sorted with ',' as the dashboard passes them.",
   "schema": "MUNICH_DATASET",
   "tables": {
     "BIKE_COUNTS_15MIN": 93312,

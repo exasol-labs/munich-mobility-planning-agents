@@ -24,7 +24,7 @@ Interactive:
 exakit data-load
 ```
 1. Choose **A local CSV / Parquet / JSON file, or a folder of them**.
-2. Paste the **full path** of `data/munich-dataset`, e.g. `/Users/<you>/munich-mobility-agents/data/munich-dataset`.
+2. Paste the **full path** of `data/munich-dataset`. Run `echo "$PWD/data/munich-dataset"` in the repo folder to get it.
 3. Target schema: `MUNICH_DATASET`
 
 Or in one line, without prompts (macOS / Linux / WSL):

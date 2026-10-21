@@ -10,7 +10,7 @@ The dataset is published as a **GitHub release asset**, not in git: `munich-data
 | MVV_STOPS, MVV_ROUTES, MVV_TRIPS, MVV_STOP_TIMES, MVV_CALENDAR, MVV_CALENDAR_DATES, MVV_AGENCY, MVV_FEED_INFO, MVV_TICKETING_DEEP_LINKS | 28,330 · 906 · 112,882 · 2,176,946 · 1,734 · 9,638 · 99 · 1 · 1 | The MVV **scheduled** timetable (GTFS, 1 Sep–30 Nov 2026), enriched with `line_mode`, `stop_mode`, `in_munich` and `district_no` | MVV open data (GTFS) |
 | VEHICLE_CAPACITY | 5 | Planning capacity of one scheduled trip per mode (S-Bahn 1,200, U-Bahn 900, regional 500, tram 205, bus 90), with sources | Researched for this project; sources in the table |
 | LINE_CAPACITY | 23 | Per-line overrides where the formation differs (e.g. U4/U7 580, MetroBus 100) | Same |
-| PT_PROJECT_STATIONS | 88 | 17 planned rail and tram projects, one row per station and line: opening year, status, funding, frequency or analog line, district | Curated from official sources in `source/pt_projects.csv`; every row has a source URL and a verified flag |
+| PT_PROJECT_STATIONS | 88 | 17 planned rail and tram projects, one row per station and line: opening year, status, funding, frequency or analog line, district | Curated from official sources in [`data/source/pt_projects.csv`](source/pt_projects.csv); every row has a source URL and a verified flag |
 | CYCLING_INFRASTRUCTURE | 21,172 | Cycle-path segments with type, length and midpoint | Munich open data: Radverkehrsnetz |
 | BIKE_COUNT_STATIONS, BIKE_COUNTS_DAILY, BIKE_COUNTS_15MIN | 6 · 972 · 93,312 | The permanent bicycle counters, Jan–Jul 2026, daily with weather and in 15-minute intervals | Munich open data: Raddauerzählstellen |
 | ROADWORKS | 5,702 | Current and planned roadworks with dates, impact and centroid | Munich open data: Baustellen |
@@ -27,7 +27,7 @@ gh release create data-vN munich-dataset.zip --title "Munich dataset vN" --notes
 Then update `url`, `release_tag`, `bytes` and `sha256` in `dataset.json`, and the row counts in `tests/expected.json` if they changed.
 
 ## Rebuilding the CSVs yourself (optional)
-`scripts/prepare_dataset.py` turns the portal download (`munich-open-data.zip`) into this folder. It also writes the curated tables (capacities, employment, population forecast, project stations from `source/pt_projects.csv`).
+`scripts/prepare_dataset.py` turns the portal download (`munich-open-data.zip`) into this folder. It also writes the curated tables (capacities, employment, population forecast, project stations from `data/source/pt_projects.csv`).
 ```bash
 python3 scripts/prepare_dataset.py ~/Downloads/munich-open-data.zip --out data/munich-dataset
 ```

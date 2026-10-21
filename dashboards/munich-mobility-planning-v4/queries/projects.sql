@@ -82,7 +82,7 @@ comps AS (
     LEFT JOIN laim ON ps."project_id" = 'laim_inbound_restore' AND laim.line = ps."line"
     LEFT JOIN ana ON ana.line_mode = ps."mode" AND ana.line = ps."analog_line"
     UNION ALL
-    -- rule 4: 2nd trunk = new-tunnel trains (above) plus a 15-minute basic interval; nothing removed from the old trunk (slots reused).
+    -- rule 4: 2nd trunk = new-tunnel trains (above) plus a 15-minute basic interval; nothing removed from the existing trunk (slots reused).
     -- every station a non-excluded S-Bahn line serves today: departures_new = GREATEST(departures_today, 152) = 4/h x 19 h x 2 directions
     SELECT 'stammstrecke2', 'upgraded: 15-minute basic interval', sb.district_no, sb.station_id, NULL, NULL, NULL, 'S-Bahn', sb.line,
            '15-min basic interval: GREATEST(today, 152)', GREATEST(sb.dep_today, 152) - sb.dep_today, sb.capacity, NULL

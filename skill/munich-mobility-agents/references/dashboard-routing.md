@@ -4,7 +4,7 @@
 Without it, an agent asked to "create a dashboard" takes the fastest path it knows: an HTML artifact, a React page, an inline chart or a Markdown table. On this demo every visual result must live on **Dash Server** so the audience sees a hosted, re-openable dashboard built from inspectable SQL on the local Exasol database.
 
 ## The rule
-Any request whose output is visual — dashboard, chart, graph, plot, view, visualisation, KPI tiles, executive view, report page, "show me" — is built as a Dash Server app. Three layers enforce it on an installed machine:
+Any request whose output is visual — dashboard, chart, graph, plot, view, visualisation, KPI page, executive view, report page, "show me" — is built as a Dash Server app. Three layers enforce it on an installed machine:
 
 1. `~/.claude/CLAUDE.md` carries the rule block (between `munich-mobility-agents:start/end` markers).
 2. This skill's description triggers on the same words.

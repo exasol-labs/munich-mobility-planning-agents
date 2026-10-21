@@ -1,6 +1,6 @@
 # Playbook for the urban-planning agent (Munich mobility tutorial)
 
-Read this once per session. It holds what every earlier run spent most of its time rediscovering:
+Read this once per session. It holds what is slowest to rediscover:
 the data quirks, the exact deploy recipe for Dash Server, and the orders of magnitude to sanity-check against.
 It does not hold the answers. The queries, the score and the interpretation are the agent's own work, shown live.
 
@@ -31,7 +31,7 @@ Other AI clients find the same skills under `~/.agents/skills/`.
 - **Cycling infrastructure:** drop `path_type = 'Dummy'`. Segment midpoints are `mid_lat`, `mid_lon`.
 - **Bicycle counters:** 5 of the 6 counters have daily data (Jan to Jul 2026); Arnulf ends 2026-04-30; Margareten has none. The 15-minute table has `time_start` as text `HH:MM`.
 - **Distance:** haversine from the data-model file, with a bounding-box prefilter (`stop_lat BETWEEN lat - 0.0015 AND lat + 0.0015`) so the join stays fast. Do not restrict to the same district; it drops pairs across borders.
-- **Connection limit:** Exasol Personal allows 20 parallel sessions, and Dash Server keeps some idle after every deploy, so several agents deploying in one session can fill it. If a query, deploy or page load fails with "license limit of 20 parallel connections", wait a few seconds and retry once; do not redesign anything. `app_deploy_draft` with auto-rollback simply needs a second call.
+- **Connection limit:** Exasol Personal allows 20 parallel sessions, and Dash Server keeps some idle after every deploy, so several deploys in one session can fill it. If a query, deploy or page load fails with "license limit of 20 parallel connections", wait a few seconds and retry once; do not redesign anything. `app_deploy_draft` with auto-rollback simply needs a second call.
 - **pyexasol placeholders** in the dashboard SQL: `{horizon!d}`, `{kind!s}`, `{w_density!f}`. Never `:name`. When you run such a file through the exasol MCP tool, substitute the sample values from `queries/sql_smoke.json` first.
 
 ## 3. The fast path: one pass, about 15 tool calls, about five minutes
@@ -48,15 +48,15 @@ simple: write every piece once, keep it short, and do not re-send what you alrea
 | 5. `apps_list`, then `app_create_exasol_dashboard` only if the app is missing | 1 to 2 |
 | 6. `Read` the skill's `assets/munich_ui.py`, then one `app_put_files` with `app.py` (from `assets/app_skeleton.py`, about 80 lines), `munich_ui.py` unchanged, every query, `queries/sql_smoke.json`, `requirements.txt` | 2 |
 | 7. `app_deploy_draft`. If it fails, read the error, fix only the broken file with one more `app_put_files`, deploy again | 1 to 3 |
-| 8. One `browser_batch`: navigate, wait 6 s, `get_page_text`, screenshot. Tiles and table must show numbers | 1 |
+| 8. One `browser_batch`: navigate, wait 6 s, `get_page_text`, screenshot. The map and chart must show numbers | 1 |
 | 9. The report (answer, key table, SQL, gaps, URL) | 0 |
 
-What made earlier runs slow (measured: 80 to 95 % of the time was the model writing text):
-- **Re-sending the long shared CTE chain** in ten or more exploratory queries (50,000 characters in one run). Explore small; run the chain only in the three or four final queries.
+What slows a run down (80 to 95 % of a run's time is the model writing text):
+- **Re-sending the long shared CTE chain** in ten or more exploratory queries (that adds up to about 50,000 characters). Explore small; run the chain only in the three or four final queries.
 - **Writing the app twice**: a local file with syntax checks in Bash, then the same content again into `app_put_files`. Write it once, straight into `app_put_files`; `app_deploy_draft` validates it and reports any error.
 - **`app_patch_file`** is slow (over a minute per call). Re-put the one file instead.
 - **Several browser rounds** with long waits. One batch is enough; the deploy health check already proved the routes.
-- **Repeating the SQL** in the findings file and the report. Name the query files and the workspace path instead.
+- **Repeating the SQL** in the report. Name the query files and the workspace path instead.
 - **Long reports.** The answer, the top 10 rows (the full table is on the dashboard), the gaps, the URL.
 
 ## 4. Deploy recipe for Dash Server (macOS, Linux, WSL)

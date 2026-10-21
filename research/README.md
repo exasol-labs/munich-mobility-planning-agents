@@ -4,7 +4,7 @@ The background behind the forecast (v3), the scenarios (v4) and the assistant (v
 
 | File | What's in it | Used by |
 |---|---|---|
-| [urban-planning.md](urban-planning.md) | The planning agent's findings for every dashboard version: method, SQL, results and caveats | v1–v5 |
+| [urban-planning.md](urban-planning.md) | The urban-planning findings for every dashboard version: method, results and caveats | v1–v5 |
 | [district-growth.md](district-growth.md) | Population per district: counts 2015/2024/2025, the official 2045 forecast, the big development areas (Freiham, Neufreimann, Nordost …) | v3, v4 |
 | [plans-facts.md](plans-facts.md) | Munich's current mobility projects and proposals, as facts with sources: transit, cycling, roadworks, politics and budget | v4, v5 |
 | [plans-research.md](plans-research.md) | The same research as an assessed summary: what is funded, what is stalled, what it means per district | v4, v5 |

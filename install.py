@@ -22,8 +22,6 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PERSONAS = ["urban-planning"]
 SKILLS = ["munich-mobility-agents", *PERSONAS]
-# installed by earlier versions of this repo; removed on install so no stale persona lingers
-RETIRED = ["mobility-operations", "sustainability", "city-leadership", "persona-metrics"]
 KEY_SRC = HERE / "secrets" / "openai_api_key"
 KEY_DST = Path.home() / ".exasol-starter-kit" / "credentials" / "openai_api_key"
 START, END = "<!-- munich-mobility-agents:start -->", "<!-- munich-mobility-agents:end -->"
@@ -53,7 +51,7 @@ def install_skills(step) -> None:
                 if "{{REPO}}" in text:
                     md.write_text(text.replace("{{REPO}}", str(HERE)), encoding="utf-8")
             if name in PERSONAS:
-                # one shared look for the four dashboards; a single source in the repo, a copy per skill when installed
+                # one shared look for the dashboards; a single source in the repo, a copy per skill when installed
                 (dst / "assets").mkdir(exist_ok=True)
                 for shared in ("munich_ui.py", "app_skeleton.py"):
                     shutil.copy2(HERE / "skill" / "_shared" / shared, dst / "assets" / shared)
@@ -94,16 +92,6 @@ def _client_present(name: str, path: Path) -> bool:
         return True
     root = path.parent.parent if path.parent.name == "rules" else path.parent
     return root.is_dir()
-
-
-def remove_legacy_commands(step) -> None:
-    """Earlier versions installed /mobility-operations etc. as commands. The persona skills replace them
-    (a skill is also a slash command), so drop the old files to avoid two entries with one name."""
-    for name in PERSONAS:
-        f = claude_home() / "commands" / f"{name}.md"
-        if f.exists():
-            step(f"remove legacy command {f}")
-            f.unlink()
 
 
 def install_rules(step) -> list[str]:
@@ -164,18 +152,6 @@ def install_hook(step, enable: bool) -> None:
     settings.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def remove_retired(step) -> None:
-    for name in RETIRED:
-        for root in (claude_home() / "skills", Path.home() / ".agents" / "skills"):
-            if (root / name).exists():
-                step(f"remove retired skill {root / name}")
-                shutil.rmtree(root / name, ignore_errors=True)
-        f = claude_home() / "agents" / f"{name}.md"
-        if f.exists():
-            step(f"remove retired agent {f}")
-            f.unlink()
-
-
 def link_secret(step) -> str:
     """Point the kit's credentials path at secrets/openai_api_key. Never reads or prints the key."""
     if not KEY_SRC.exists():
@@ -188,7 +164,7 @@ def link_secret(step) -> str:
     if KEY_DST.exists() or KEY_DST.is_symlink():
         backup = KEY_DST.with_name(KEY_DST.name + ".before-tutorial")
         KEY_DST.replace(backup)
-        step(f"kept the previous key file as {backup}")
+        step(f"kept the existing key file as {backup}")
     try:
         KEY_DST.symlink_to(KEY_SRC)
     except OSError:  # Windows without symlink rights: copy instead
@@ -226,7 +202,6 @@ def uninstall() -> int:
             shutil.rmtree(root / name, ignore_errors=True)
     for f in (HERE / "agents").glob("*.md"):
         (claude_home() / "agents" / f.name).unlink(missing_ok=True)
-    remove_legacy_commands(lambda m: None)
     remove_rules()
     install_hook(lambda m: None, enable=False)
     if KEY_DST.is_symlink():
@@ -251,10 +226,8 @@ def main() -> int:
     say = (lambda *a: None) if args.quiet else print
     step = (lambda m: print(f"==> {m}")) if args.verbose else (lambda m: None)
 
-    remove_retired(step)
     install_skills(step)
     n = install_agents(step)
-    remove_legacy_commands(step)
     clients = install_rules(step)
     install_hook(step, enable=not args.no_hook)
 

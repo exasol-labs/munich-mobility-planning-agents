@@ -1,6 +1,6 @@
 # 10. Troubleshooting
 
-These are the problems we actually hit while building this tutorial, and what fixed them. Start with the quick check:
+Common problems and their fixes. Start with the quick check:
 
 ```bash
 exakit status
@@ -10,7 +10,7 @@ python3 scripts/check_all.py
 
 ## Running everything with an agent
 
-[AGENTS.md](../AGENTS.md) has a runbook for an agent (for example Claude Code) that runs the whole tutorial end to end: the ground rules, how to deploy a finished dashboard with the Dash Server MCP tools, how to build one yourself, and what to report back.
+[AGENTS.md](../AGENTS.md) has step-by-step instructions for an agent (for example Claude Code) that runs the whole tutorial end to end: the ground rules, how to deploy a finished dashboard with the Dash Server MCP tools, how to build one yourself, and what to report back.
 
 ## The database hangs, or `exakit status` says "conflict"
 
@@ -72,7 +72,7 @@ Column names in `MUNICH_DATASET` are lowercase and must be double-quoted: `SELEC
 
 ## Blank page after a deploy
 
-The browser still holds the old revision's page. **Hard-reload** it (Cmd+Shift+R on macOS, Ctrl+Shift+R on Windows and Linux). If it stays blank, ask Claude to run `app_run_healthcheck` and `app_tail_logs` for the app.
+The browser still holds the page from before the deploy. **Hard-reload** it (Cmd+Shift+R on macOS, Ctrl+Shift+R on Windows and Linux). If it stays blank, ask Claude to run `app_run_healthcheck` and `app_tail_logs` for the app.
 
 Then run the first-render smoke test:
 
@@ -82,7 +82,7 @@ python3 scripts/check_dashboard.py munich-mobility-planning-v4
 
 ## A deployed file is subtly broken
 
-`app_put_files` once dropped a non-breaking space in `munich_ui.py` while we built the series. When you deploy a finished dashboard, have Claude copy the files byte for byte (a plain file copy into the draft workspace) instead of retyping them. Also remove the sample queries that `app_create_exasol_dashboard` creates, so the healthcheck's SQL smoke test runs only the app's own files.
+`app_put_files` can drop non-breaking spaces, for example in `munich_ui.py`. When you deploy a finished dashboard, have Claude copy the files byte for byte (a plain file copy into the draft workspace) instead of retyping them. Also remove the sample queries that `app_create_exasol_dashboard` creates, so the healthcheck's SQL smoke test runs only the app's own files.
 
 ## My numbers differ slightly from the Check boxes
 

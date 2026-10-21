@@ -38,8 +38,6 @@ v4 adds a **Scenarios** foldout. You can switch on 17 planned projects from `PT_
 | `queries/sql_smoke.json` | `ranking.sql` at `year = 2045`, `w_jobs = 1.0`, `projects = "stammstrecke2,laim_inbound_restore,u5_pasing"`; `projects.sql` and `geo.sql` without parameters. |
 | `sql_log.py`, `munich_ui.py`, `dash_server_exasol.py`, `requirements.txt` | As in v1. |
 
-`queries/business/` and `queries/system/` are empty folders left by the scaffold.
-
 ## The projects
 
 `PT_PROJECT_STATIONS` has 17 projects and 88 station rows, curated from official sources in `data/source/pt_projects.csv`. `opening_year_model` is the published opening year, or 2040 where none is published (then `opening_year_assumed = 1`). Net places per weekday once open, from `research/urban-planning.md`:
@@ -97,7 +95,7 @@ laim AS (
 ),
 ```
 
-**Rule 4, the 2nd Stammstrecke (option 2):**
+**Rule 4, the 2nd Stammstrecke:**
 - The new-tunnel trains at the 5 tunnel stations count by rule 1a.
 - Nothing is removed from the old trunk; the freed slots are assumed to be reused.
 - Every S-Bahn line except S2, S5, S7 and S20 gets at least 15-minute service at each station inside Munich it serves today. 152 = 4 trains/h × 19 h × 2 directions.

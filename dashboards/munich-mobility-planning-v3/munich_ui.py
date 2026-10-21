@@ -1,4 +1,4 @@
-"""Shared look for the four Munich dashboards: tokens, header, stat tiles, cards, chart theme, tables.
+"""Shared look for the Munich dashboards: tokens, header, stat tiles, cards, chart theme, tables.
 
 Copied unchanged into every app workspace next to app.py. Colours follow a validated
 categorical order (CVD-safe adjacent pairs); never cycle a new hue, never a dual axis.
@@ -15,8 +15,8 @@ INK, INK2, MUTED = "#0b0b0b", "#52514e", "#8a8984"
 
 # categorical slots in the validated order (light mode)
 SLOTS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
-# one persona, one accent
-PERSONA = {"ops": "#eb6834", "planning": "#2a78d6", "sustainability": "#1baf7a", "leadership": "#4a3aa7"}
+# accent colour of the urban-planning dashboards
+PERSONA = {"planning": "#2a78d6"}
 # transit modes in stack order; night lines (<1 % of departures) are folded out of the charts
 MODES = {"Bus": SLOTS[0], "Tram": SLOTS[1], "U-Bahn": SLOTS[2], "S-Bahn": SLOTS[3], "Regional rail": SLOTS[4]}
 # sequential ramps, one hue each
@@ -280,7 +280,7 @@ def points_map(rows, lat, lon, color_col, hover, ramp, cmax=None, size_col=None,
 
 
 def scatter(rows, x, y, size_col, label, flag_col, colors, x_title, y_title, hover):
-    """Bubble chart: x, y, size; colour split by a 0/1 flag column; flagged points labelled directly."""
+    """Scatter: x, y, marker size from size_col; colour split by a 0/1 flag column; flagged points labelled directly."""
     fig = go.Figure()
     for flag, (name, color) in enumerate(colors):
         sub = [r for r in rows if int(num(r.get(flag_col))) == flag]

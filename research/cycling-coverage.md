@@ -1,11 +1,11 @@
 # Munich Cycling Coverage: how well is each district served for cycling?
 
-Dashboard: http://127.0.0.1:5100/apps/munich-cycling-coverage (Dash Server, revision 3, healthcheck healthy)
+Dashboard: http://127.0.0.1:5100/apps/munich-cycling-coverage (Dash Server)
 Data: `MUNICH_DATASET` on Exasol, read-only user `mcp_readonly`. Every number below comes from the queries shown, run on 2026-10-21.
 
 ## Answer
 
-Munich has 1,049.4 km of cycle path once connectors and Dummy segments are taken out (1,044.5 km of it inside the 25 districts). That is 875.2 km at the default quality weights, or 0.311 weighted km per 1,000 residents + jobs in 2024. **Per person, the dense inner districts are the least served:** Altstadt-Lehel (0.34× the city average), Maxvorstadt (0.45×), Ludwigsvorstadt-Isarvorstadt (0.46×), Au-Haidhausen (0.56×) and Schwanthalerhöhe (0.60×). All five are in the densest third, and their networks are among the densest by area (1.5× to 2.2× per km²). Au-Haidhausen (0.56× per person, 1.60× per km²) and Schwabing-West (0.88× vs 2.12×) show the same split as the earlier finding: lots of path per km², not much per person. **Per km², the outer districts are thin:** Aubing-Lochhausen-Langwied (0.34×), Allach-Untermenzing (0.40×) and Feldmoching-Hasenbergl (0.44×). If no paths are added, growth to 2045 takes the city average down to 0.270 km per 1,000 activity. The largest decline is Aubing-Lochhausen-Langwied, from 1.20× to 0.72× (−40.5 %), because of the Freiham build-out. This measures supply only, not use, quality on the ground or safety.
+Munich has 1,049.4 km of cycle path once connectors and Dummy segments are taken out (1,044.5 km of it inside the 25 districts). That is 875.2 km at the default quality weights, or 0.311 weighted km per 1,000 residents + jobs in 2024. **Per person, the dense inner districts are the least served:** Altstadt-Lehel (0.34× the city average), Maxvorstadt (0.45×), Ludwigsvorstadt-Isarvorstadt (0.46×), Au-Haidhausen (0.56×) and Schwanthalerhöhe (0.60×). All five are in the densest third, and their networks are among the densest by area (1.5× to 2.2× per km²). Au-Haidhausen (0.56× per person, 1.60× per km²) and Schwabing-West (0.88× vs 2.12×) show the same split: lots of path per km², not much per person. **Per km², the outer districts are thin:** Aubing-Lochhausen-Langwied (0.34×), Allach-Untermenzing (0.40×) and Feldmoching-Hasenbergl (0.44×). If no paths are added, growth to 2045 takes the city average down to 0.270 km per 1,000 activity. The largest decline is Aubing-Lochhausen-Langwied, from 1.20× to 0.72× (−40.5 %), because of the Freiham build-out. This measures supply only, not use, quality on the ground or safety.
 
 ## Model
 

@@ -1,7 +1,7 @@
 """Skeleton for a Munich tutorial dashboard on Dash Server (about 80 lines when filled in).
 
 Put it in the app with app_put_files as app.py, next to munich_ui.py and your queries/*.sql.
-Replace every TODO; delete the parts the persona does not need. The helpers in munich_ui.py
+Replace every TODO; delete the parts the dashboard does not need. The helpers in munich_ui.py
 only render: what each query computes and what each chart says is your design.
 
 Host rules: a create_dash_app factory, callbacks on `app`, no query at import time,
@@ -28,7 +28,7 @@ def create_dash_app(server, url_base_pathname, metadata):
         return ui.rows_or_error(load_rows(server, metadata, __file__, f"queries/{name}.sql", params=params))
 
     app.layout = ui.page([
-        # TODO: a control if the persona needs one, else dcc.Interval(id="boot", max_intervals=1, interval=200)
+        # TODO: a control if the dashboard needs one, else dcc.Interval(id="boot", max_intervals=1, interval=200)
         dcc.RadioItems(id="horizon", options=[{"label": f" {d} days", "value": d} for d in (7, 14, 28)], value=28, inline=True,
                        inputStyle={"marginLeft": "12px"}, style={"fontSize": "13px", "marginBottom": "14px"}),
         html.Div(id="kpis"),
@@ -39,7 +39,7 @@ def create_dash_app(server, url_base_pathname, metadata):
         ui.block(ui.card("TODO ranked table", html.Div([ui.ranked_table("ranking", TABLE, ACCENT, highlight="score"), html.Div(id="err")]),
                          "TODO the score formula in one sentence", flex="1 1 100%")),
         ui.notes("Method and data gaps", ["TODO method in one line", "TODO what the data cannot answer"]),
-    ], eyebrow="TODO persona", title="TODO title", accent=ACCENT, subtitle="TODO the question, plus the main caveat.")
+    ], eyebrow="TODO eyebrow", title="TODO title", accent=ACCENT, subtitle="TODO the question, plus the main caveat.")
 
     @app.callback(Output("kpis", "children"), Output("main", "figure"), Output("side", "figure"),
                   Output("ranking", "data"), Output("err", "children"), Output("page-meta", "children"),

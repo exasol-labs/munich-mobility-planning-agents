@@ -1,6 +1,6 @@
 """v5 Ask-the-assistant: an OpenAI Responses API tool loop over the Munich planning data.
 
-Key lookup (same pattern as the persona-metrics Ask-the-data module, for OpenAI):
+Key lookup:
   1. OPENAI_API_KEY in the process environment.
   2. ~/.exasol-starter-kit/credentials/openai_api_key, owner-readable only (mode 600).
 The key is read at runtime only. It is never logged, never returned to the page and never in source.
@@ -33,7 +33,7 @@ HISTORY_TOKEN_CAP = 150_000
 SESSION_IDLE_S = 4 * 3600
 ROW_CAP = 200
 SCHEMA = "MUNICH_DATASET"
-PRICES = {"input": 10.00, "cached": 1.00, "output": 50.00}  # US$ per 1M tokens, gpt-6-astra standard (v5-prep)
+PRICES = {"input": 10.00, "cached": 1.00, "output": 50.00}  # US$ per 1M tokens, gpt-6-astra standard
 
 CRED_DIR = Path.home() / ".exasol-starter-kit" / "credentials"
 KEY_FILE = str(CRED_DIR / "openai_api_key")
@@ -80,10 +80,9 @@ def key_status():
 
 
 # ------------------------------------------------------------------ SQL guard
-# Copied from the persona-metrics Ask-the-data module (llm_sql.guard). Two extensions, because this dataset's
-# documented style writes MUNICH_DATASET.TABLE unquoted and analysts use CTEs: (1) the schema/table pair may be
-# quoted or unquoted, (2) names defined as CTEs in the statement, and DUAL, count as known sources. The row cap is
-# enforced by fetching at most ROW_CAP rows, so ORDER BY in the query keeps its meaning.
+# One bounded, read-only SELECT on the schema. This dataset's documented style writes MUNICH_DATASET.TABLE unquoted
+# and analysts use CTEs, so (1) the schema/table pair may be quoted or unquoted, and (2) names defined as CTEs in the
+# statement, and DUAL, count as known sources. The row cap is enforced by fetching at most ROW_CAP rows, so ORDER BY in the query keeps its meaning.
 FORBIDDEN = re.compile(
     r"\b(insert|update|delete|merge|drop|create|alter|truncate|grant|revoke|"
     r"commit|rollback|call|execute|import|export)\b", re.I)
@@ -134,8 +133,8 @@ def _jsonable(v):
 
 def execute_readonly(sql, backend):
     """Run one statement through the dashboard's server-side Exasol profile (starter-kit = the read-only MCP user
-    mcp_readonly, 30 s statement timeout). No guard here: the database is the floor (run_sql calls it after guard();
-    the D3 check calls it directly to show a CREATE fails at the database)."""
+    mcp_readonly, 30 s statement timeout). No guard here: the database is the floor (run_sql calls it after guard(),
+    and calling it directly with a CREATE shows that the database itself rejects writes)."""
     res = backend.execute_sql(sql.replace("{", "{{").replace("}", "}}"))   # pyexasol formats the text; keep braces literal
     if res.get("status") != "ok":
         raise RuntimeError(str(res.get("error") or "query failed"))

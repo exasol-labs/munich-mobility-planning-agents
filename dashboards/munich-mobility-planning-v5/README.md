@@ -34,7 +34,7 @@ The page never scrolls by itself.
 |---|---|
 | `app.py` | The page. One `dcc.Store` (`view-store`: year, w, projects, pessimistic, what-if) is the only source for the map and chart. Callbacks: `refresh` (view → map, chart, titles, view line, banner, SQL group 1); `view_to_controls` (view → slider, preset, w, checklists); `controls_to_view` (controls → view, `prevent_initial_call=True`, writes only on a real change); `chat` (boot, Ask, New conversation and a 1-second poll while a job runs); a clientside callback for the chips. Also the `Backend` class: the only things `assistant.py` may use from the dashboard. |
 | `assistant.py` | The OpenAI tool loop: key lookup, SQL guard, tool schemas, sessions, background jobs, what-if arithmetic, cost estimate. |
-| `context.md` | The fixed context pack sent as `instructions` with every request, 140,862 bytes (about 44k tokens; 44,066 counted by OpenAI's token count endpoint before the last small edits). It contains role and rules, the data model, the dashboard's model, the reference numbers, the findings and the research on plans and projects, and `ranking.sql` in full. It is the same file as `research/v5-context.md`. |
+| `context.md` | The fixed context pack sent as `instructions` with every request, 142,092 bytes (about 44k tokens). It contains role and rules, the data model, the dashboard's model, the reference numbers, the findings and the research on plans and projects, and `ranking.sql` in full. It is the same file as `research/v5-context.md`. |
 | `queries/ranking.sql` | v4's model plus a what-if input `{extra!s}` (below). |
 | `queries/projects.sql` | Unchanged from v4. |
 | `queries/geo.sql` | As in v1. |
@@ -85,7 +85,7 @@ In this repo you put the key in `secrets/openai_api_key` (gitignored). `python3 
               include=["web_search_call.action.sources"], stream=True)
 ```
 
-- `store=False`: OpenAI keeps no conversation. The app carries the earlier turns of this browser session itself, dropping the oldest whole turns above an estimated 150,000 tokens (`HISTORY_TOKEN_CAP`).
+- `store=False`: OpenAI keeps no conversation. The app carries the conversation of this browser session itself, dropping the oldest whole turns above an estimated 150,000 tokens (`HISTORY_TOKEN_CAP`).
 - Each question goes with a line describing the current view, e.g. "[Current view on the page] year 2045 · w = 1.0 · scenario: Funded only · …".
 - At most 12 tool rounds per question (`MAX_TOOL_ROUNDS`); the last round runs with `tool_choice = "none"`. A job times out after 600 s. Each question runs in a background thread and the page polls it once a second.
 
@@ -129,7 +129,7 @@ Behind the guard, the database user itself is read-only: a `CREATE TABLE` sent p
 **Cost estimate** (shown per answer), at US$ per 1M tokens:
 
 ```python
-PRICES = {"input": 10.00, "cached": 1.00, "output": 50.00}  # US$ per 1M tokens, gpt-6-astra standard (v5-prep)
+PRICES = {"input": 10.00, "cached": 1.00, "output": 50.00}  # US$ per 1M tokens, gpt-6-astra standard
 ```
 
 The estimate leaves out the cache-write premium and web-search fees, so the bill is slightly higher.

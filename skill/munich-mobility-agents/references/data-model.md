@@ -1,6 +1,6 @@
 # MUNICH_DATASET data model
 
-Schema `MUNICH_DATASET`, loaded by `EXAKIT_SCHEMA=MUNICH_DATASET exakit data-load ~/munich-open-data` from the flat folder that `prepare_dataset.py` writes. One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views` because a CSV load may leave dates and decimals as VARCHAR.
+Schema `MUNICH_DATASET`, loaded by `exakit data-load` (with `EXAKIT_SCHEMA=MUNICH_DATASET`) from the flat folder that `scripts/prepare_dataset.py` writes (`data/munich-dataset`). One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views` because a CSV load may leave dates and decimals as VARCHAR.
 
 **Column names are lowercase and case-sensitive.** exapump creates them exactly as in the CSV header, so every column must be double-quoted in SQL: `SELECT "district_no", "population" FROM MUNICH_DATASET.DISTRICTS`. Unquoted `district_no` fails with "object DISTRICT_NO not found". Table and schema names are upper case and need no quotes.
 
@@ -41,7 +41,7 @@ A modelled city estimate, not a count: no open per-district employment count exi
 | source | sources of counts and forecast |
 
 ### PT_PROJECT_STATIONS (88 rows, 17 projects) — planned rail and tram projects, one row per station and line
-Curated in `scripts/data/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are re-routed, not purely added.
+Curated in `data/source/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are re-routed, not purely added.
 
 The forecast gives district values for 2045 only; any year in between is an interpolation (state it as such). Jobs are forecast for 2040 (`DISTRICT_EMPLOYMENT.jobs_2040_forecast`).
 

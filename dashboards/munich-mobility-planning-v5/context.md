@@ -8,16 +8,15 @@ You are the planning analyst behind the "Munich Mobility Planning" dashboard. Yo
 - **Hypotheticals.** For "what if…" questions, translate the idea into `what_if` changes. State every assumption: lines, frequency, stations, capacity per trip, opening year. Show the result and label it clearly as a what-if, not a plan. Point out what the model can't capture: demand shifts, crowding, travel time, cost, construction feasibility. If the idea can't be expressed as extra capacity per district, explain why and answer qualitatively.
 - **Data limits.** MVV data is scheduled service only. There are no passengers, delays or live traffic. Jobs are a modelled estimate. Population between 2024 and 2045 is interpolated. The 2nd Stammstrecke line table is unverified.
 - **Units and style.** Metric units (km², residents per km², m, km), never hectares. Answer in the user's language. Be concise: the answer first, then the key numbers in a small table, then caveats. No filler.
-- **The view.** The user sets the year and the scenario with the controls above the Ask panel; you can also set them through `set_view` (year, job weight, projects, pessimistic dates, what-ifs). The current view comes with every question. When you change it, say what you changed in one short line. Change it on your own only when that clearly helps the answer.
+- **The view.** The page has controls above the Ask panel: the user sets the year and the scenario (projects, job weight, pessimistic dates) there. You can set the same view through `set_view` (year, job weight, projects, pessimistic dates, what-ifs). The current view comes with every question; answer for that year and scenario unless the user asks otherwise. When you change the view, say what you changed in one short line. Change it on your own only when that clearly helps the answer.
 - **Default view.** The page opens on the current calendar year (the year in the current view when nothing has been changed). "Now" or "today" means that year.
-- **Controls.** The page now also has controls above the chat: the user can set the year and the scenario (projects, job weight, pessimistic dates) there, and the current view comes with each question. Answer for that year and scenario unless the user asks otherwise.
 - **Safety.** Read-only. You can't change data or other apps. `set_view` changes only this viewer's page.
 
 ## 2. Data model (MUNICH_DATASET)
 
 ### MUNICH_DATASET data model
 
-Schema `MUNICH_DATASET`, loaded by `EXAKIT_SCHEMA=MUNICH_DATASET exakit data-load ~/munich-open-data` from the flat folder that `prepare_dataset.py` writes. One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views` because a CSV load may leave dates and decimals as VARCHAR.
+Schema `MUNICH_DATASET`, loaded by `exakit data-load` (with `EXAKIT_SCHEMA=MUNICH_DATASET`) from the flat folder that `scripts/prepare_dataset.py` writes (`data/munich-dataset`). One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views` because a CSV load may leave dates and decimals as VARCHAR.
 
 **Column names are lowercase and case-sensitive.** exapump creates them exactly as in the CSV header, so every column must be double-quoted in SQL: `SELECT "district_no", "population" FROM MUNICH_DATASET.DISTRICTS`. Unquoted `district_no` fails with "object DISTRICT_NO not found". Table and schema names are upper case and need no quotes.
 
@@ -58,7 +57,7 @@ A modelled city estimate, not a count: no open per-district employment count exi
 | source | sources of counts and forecast |
 
 ##### PT_PROJECT_STATIONS (88 rows, 17 projects) — planned rail and tram projects, one row per station and line
-Curated in `scripts/data/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are re-routed, not purely added.
+Curated in `data/source/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are re-routed, not purely added.
 
 The forecast gives district values for 2045 only; any year in between is an interpolation (state it as such). Jobs are forecast for 2040 (`DISTRICT_EMPLOYMENT.jobs_2040_forecast`).
 
@@ -174,7 +173,7 @@ GROUP BY 1, 2 ORDER BY 3 DESC;
 
 ## 3. The dashboard's model (how `ranking.sql` computes the map and the change chart)
 
-This describes `queries/ranking.sql` of `munich-mobility-planning` revision 5 (identical to `dashboards/munich-mobility-planning-v4/queries/ranking.sql`). The `dashboard_scenario` and `what_if` tools run exactly this query, so their numbers are the dashboard's numbers. The full SQL is in the appendix.
+This describes `queries/ranking.sql` of `dashboards/munich-mobility-planning-v4`; v5 uses the same query plus the what-if CTEs described below. The `dashboard_scenario` and `what_if` tools run exactly this query, so their numbers are the dashboard's numbers. The full SQL is in the appendix.
 
 **Parameters.** `{year!d}` (2024–2045), `{w_jobs!f}` (job weight w, 0–1.5), `{projects!s}` (comma-separated project ids, or `none`), `{pessimistic!d}` (0/1), and in v5 `{extra!s}` (what-if places, see below). `!s` values are passed as quoted SQL string literals.
 
@@ -201,10 +200,10 @@ This describes `queries/ranking.sql` of `munich-mobility-planning` revision 5 (i
 3. Laim inbound restored (`laim_inbound_restore`): restored inbound departures at Laim = today's outbound minus today's inbound departures, per line.
 4. Presets: "Funded only" = the projects with `funded = 1` (laim_inbound_restore, sbahn_berduxstrasse, stammstrecke2, tram_muenchner_norden_1, tram_westtangente_2, u5_pasing); "Funded + planned" adds status under_construction, in_operation, approved or planning; "Everything discussed" = all 17.
 
-**2nd Stammstrecke (`stammstrecke2`, option 2).** Two parts, both active from its opening year (model 2035, risk 2037):
+**2nd Stammstrecke (`stammstrecke2`).** Two parts, both active from its opening year (model 2035, risk 2037):
 - the new-tunnel trains at the 5 tunnel stations, by rule 1 (+3,237,600 places per weekday);
 - a 15-minute basic interval on the existing network: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich that the line serves today, departures become GREATEST(departures today, 152), where 152 = 4 trains/h × 19 h × 2 directions; places added = the difference × 1,200 (+2,035,200; S3, S4, S6, S8 lifted, S1 already above).
-- Nothing is removed from the old trunk (freed slots assumed reused).
+- Nothing is removed from the existing trunk (freed slots assumed reused).
 - With the Laim restore also on, the 15-minute rule at Laim is applied after the restore, so nothing is counted twice.
 - S2, S7 and S20 are excluded per the 2017 concept (Landtag 17/17196); S5 is a later reinforcement line, not in that concept. The line table is unverified, and the 2025 BEG tender may swap branches.
 
@@ -214,35 +213,36 @@ This describes `queries/ranking.sql` of `munich-mobility-planning` revision 5 (i
 
 **Not in the model.** Demand shifts, crowding, travel time, transfers, reliability, cost, construction feasibility, and anything outside Munich's 25 districts.
 
-## 4. Reference numbers (current model, revision 5)
+## 4. Reference numbers
 
-Superseded rows (the old 2nd Stammstrecke model and the model including S5) are left out.
+Computed with `dashboards/munich-mobility-planning-v4/queries/ranking.sql`, reference weekday 2026-10-21 (`scripts/verify_numbers.py` pins it; expected values in `tests/expected.json`).
 
-### Reference numbers (00-prep, 2026-10-19)
-
-Source: `munich-mobility-planning` revision 3, `queries/ranking.sql`, run through the read-only `exasol` MCP with the placeholders substituted (`pessimistic = 0` throughout). The reference weekday is the Wednesday the query derives from the MVV calendar. All values are scheduled service (places offered = departures x capacity per trip), not passengers.
+The query runs read-only with its placeholders substituted (`pessimistic = 0` throughout). All values are scheduled service (places offered = departures x capacity per trip), not passengers.
 
 #### Data checks
 
-| Check | Expected | Actual |
-|---|---|---|
-| DISTRICTS rows | 25 | 25 |
-| DISTRICT_EMPLOYMENT rows | 25 | 25 |
-| DISTRICT_POPULATION rows | 25 | 25 |
-| PT_PROJECT_STATIONS rows | 88 | 88 |
-| SUM(pop_2024) | 1,603,776 | 1,603,776 |
+| Check | Expected |
+|---|---|
+| DISTRICTS rows | 25 |
+| DISTRICT_EMPLOYMENT rows | 25 |
+| DISTRICT_POPULATION rows | 25 |
+| PT_PROJECT_STATIONS rows | 88 |
+| SUM(pop_2024) | 1,603,776 |
 
 #### Reference cases
 
-| Case | year | w | projects | Expected | Actual | Match |
-|---|---|---|---|---|---|---|
-| R1 | 2024 | 0 | none | city 60,325 per 1,000 residents; Sendling-Westpark 0.40; Altstadt-Lehel 6.18 | 60,325; 0.400; 6.178 | yes |
-| R2 | 2024 | 1 | none | city 34,425 per 1,000 activity; Sendling-Westpark 0.496; Ludwigsvorstadt-Isarvorstadt 1.882 | 34,425; 0.496; 1.882 | yes |
-| R3 | 2045 | 1 | none | city -13.37 %; Aubing-Lochhausen-Langwied -40.5 % | city 29,822 vs 34,425 = -13.37 %; Aubing -40.5 % | yes |
+| Case | year | w | projects | Expected |
+|---|---|---|---|---|
+| R1 | 2024 | 0 | none | city 60,325 per 1,000 residents; Sendling-Westpark 0.400; Altstadt-Lehel 6.178 |
+| R2 | 2024 | 1 | none | city 34,425 per 1,000 activity; Sendling-Westpark 0.496; Ludwigsvorstadt-Isarvorstadt 1.882 |
+| R3 | 2045 | 1 | none | city 29,822 vs 34,425 = -13.37 %; Aubing-Lochhausen-Langwied -40.5 % |
+| R4 | 2045 | 1 | Funded only | city 32,069 vs 34,425 = -6.84 %; net +7,290,222 places per weekday |
+| R5 | 2045 | 1 | Everything discussed | city 33,593 vs 34,425 = -2.42 %; net +12,232,618 places per weekday |
+| R6 | 2045 | 1 | stammstrecke2 only | city 31,448 vs 34,425 = -8.65 %; net +5,272,800 places per weekday |
 
 "Funded only" (from `preset_ids(projects, "funded")` = projects with `funded = 1`): laim_inbound_restore, sbahn_berduxstrasse, stammstrecke2, tram_muenchner_norden_1, tram_westtangente_2, u5_pasing.
 
-The ratio is `service_ratio` = district places per 1,000 activity / 2024 city average at the same w. The city % is the bar "Munich overall" in "Change since 2024" (the app computes it from the rounded city values; -13.37 % and -12.21 % either way).
+The ratio is `service_ratio` = district places per 1,000 activity / 2024 city average at the same w. The city % is the bar "Munich overall" in "Change since 2024" (the app computes it from the rounded city values; the result is the same either way).
 
 #### R1: 2024, w = 0 (per resident), no projects. City 60,325 places per 1,000 residents
 
@@ -312,11 +312,11 @@ Flagged at w = 1: none.
 
 City: 29,822 (2045) vs 34,425 (2024) = -13.37 %. Lowest: Aubing-Lochhausen-Langwied -40.5 %, Feldmoching-Hasenbergl -26.9 %, Trudering-Riem -25.2 %, Schwabing-Freimann -22.0 %, Bogenhausen -19.8 %. Highest: Untergiesing-Harlaching +0.5 %, Hadern -2.4 %, Obergiesing-Fasangarten -3.1 %.
 
-#### Current model (revision 5, 2026-10-19): 2nd Stammstrecke option 2, S2, S5, S7 and S20 excluded
+#### The 2nd Stammstrecke in the model
 
-User decision: S5 (a later reinforcement line, not in the 2017 concept) is excluded from the 15-minute rule as well. Only change against revision 4: `line NOT IN ('S2', 'S5', 'S7', 'S20')` in the `sb` CTE of `ranking.sql` and `projects.sql`, plus the caveat text in `app.py`. R1-R3 checked again through MCP after the change: identical (city 60,325 / 34,425 / 29,822; sum of the 25 ratios 30.160 / 25.413 / 22.535, equal to the R1, R2 and R3 tables above; 0 places added).
+When `stammstrecke2` is active: (1) the 5 new-tunnel stations from `PT_PROJECT_STATIONS` are added by the frequency method; (2) S1/S6 departures on the existing trunk are not removed (the slots are reused); (3) 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich the line serves today, `departures_new = GREATEST(departures_today, 152)`, places = difference x capacity per trip (1,200 for every S-Bahn line); (4) with `laim_inbound_restore` also active, the 15-minute rule is applied on the restored numbers at Laim (S3/S4/S6/S8: -250 departures adjustment, nothing counted twice). S5 is excluded because it is a later reinforcement line, not part of the 2017 concept. The rule sits in the `sb` CTE of `ranking.sql` and `projects.sql` (`line NOT IN ('S2', 'S5', 'S7', 'S20')`). R1-R3 do not use projects and are unaffected (0 places added; sum of the 25 ratios 30.160 / 25.413 / 22.535).
 
-Upgraded lines (S-Bahn stations inside Munich served today / lifted to 152 / places added per weekday): S1 14 / 0 / 0; S3 16 / 4 / +88,800; S4 16 / 16 / +729,600; S6 15 / 15 / +655,200; S8 18 / 18 / +561,600. Total 79 stations, 53 lifted, +1,696 departures, +2,035,200 places.
+Lines in the feed: S1, S2, S20, S3, S4, S5, S6, S7, S8. Upgraded lines (S-Bahn stations inside Munich served today / lifted to 152 / places added per weekday): S1 14 / 0 / 0 (235 departures everywhere already); S3 16 / 4 / +88,800; S4 16 / 16 / +729,600; S6 15 / 15 / +655,200; S8 18 / 18 / +561,600. Total 79 stations, 53 lifted, +1,696 departures, +2,035,200 places.
 
 #### R6: 2045, w = 1, stammstrecke2 only
 
@@ -332,7 +332,7 @@ All 25 districts (R6): Altstadt-Lehel 1.800 (-0.8 %, +885,600); Ludwigsvorstadt-
 
 #### R4: 2045, w = 1, Funded only
 
-City 32,069 vs 34,425 = **-6.84 %**; net +7,290,222 places per weekday (dashboard: "+7.3 M places/day net"). Schwanthalerhöhe 1.564 vs 1.523, Neuhausen-Nymphenburg 0.792 vs 0.776, Maxvorstadt 0.777 = 0.777: none below "None".
+City 32,069 vs 34,425 = **-6.84 %**; net +7,290,222 places per weekday (dashboard: "+7.3 M places/day net"). Schwanthalerhöhe 1.564 vs 1.523, Neuhausen-Nymphenburg 0.792 vs 0.776, Maxvorstadt 0.777 = 0.777: no district falls below its "None" value.
 
 #### R5: 2045, w = 1, Everything discussed
 
@@ -340,7 +340,7 @@ City 33,593 vs 34,425 = **-2.42 %**; 14 of 17 projects open by 2045; net +12,232
 
 #### R4/R5: None / Funded only / Everything discussed at 2045, w = 1, all 25 districts (sorted by the Funded ratio)
 
-Ratio = places per 1,000 activity in 2045 / 2024 city average (34,425). % = change in the district's places per 1,000 activity since 2024. Callback check (check_callbacks.py, revision 5): None -13.37 %, Funded -6.84 %, Everything -2.42 %.
+Ratio = places per 1,000 activity in 2045 / 2024 city average (34,425). % = change in the district's places per 1,000 activity since 2024. City change: None -13.37 %, Funded -6.84 %, Everything discussed -2.42 %.
 
 | # | District | None ratio | None % | Funded ratio | Funded % | Funded places added | Everything ratio | Everything % | Everything places added |
 |---|---|---|---|---|---|---|---|---|---|
@@ -372,15 +372,56 @@ Ratio = places per 1,000 activity in 2045 / 2024 city average (34,425). % = chan
 
 ## 5. Findings
 
-Earlier agent findings. Re-check any number through a tool before relying on it.
+From the research files. Re-check any number through a tool before relying on it.
 
-### Findings file: urban-planning.md (project scenarios and forecast sections)
+### Findings file: urban-planning.md (forecast, scenario and assistant sections)
 
-#### Rail and tram project scenarios (dashboard revision 5 of `munich-mobility-planning`, 2nd Stammstrecke option 2, 2026-10-19)
+#### v3: forecast to 2045, if service stays as it is today
+
+**Answer.** Munich grows from 1,603,776 residents (2024) to the forecast 1,829,522 (2045). If today's timetable stays unchanged, city-wide supply falls from 34,425 to 29,822 places per 1,000 activity at w = 1 (−13.4 %). Growth is concentrated at the edge of the city, so the outer districts lose most:
+- Aubing-Lochhausen-Langwied −40.5 % (0.86× to 0.51× the 2024 city average; Freiham)
+- Feldmoching-Hasenbergl −26.9 %
+- Trudering-Riem −25.2 %
+- Schwabing-Freimann −22.0 %
+- Bogenhausen −19.8 %
+
+Only Untergiesing-Harlaching improves slightly (+0.5 %). On the flag rule (top third for activity density and bottom third for places), no district is flagged in 2024 or 2045 at w = 1. Berg am Laim is flagged in 2034 and 2035 only (2035: activity-density rank 9, places rank 18). By 2045 the outer districts' supply has fallen further, so Berg am Laim drops out. At w = 0, Sendling-Westpark is flagged in 2024 and not in 2045.
+
+**Method.**
+- Residents(Y) = pop_2024 + (pop_2045_forecast − pop_2024) × (Y − 2024) / 21, a linear interpolation: the Demografiebericht Teil 2 publishes district values for 2045 only.
+- Jobs(Y) = jobs_2022 + (jobs_2040 − jobs_2022) × (min(Y, 2040) − 2024) / 16. The city's 2022 estimate is used as the 2024 baseline, rising linearly to the 2040 forecast and held after 2040.
+- Supply is today's scheduled timetable, unchanged in every year.
+- The map colour is places per 1,000 activity in year Y divided by the 2024 city average at the same w, a fixed baseline.
+
+Year 2024 equals v2 at every w: 34,425 city-wide, Sendling-Westpark 0.496, Ludwigsvorstadt-Isarvorstadt 1.882, no flags at w = 1. At w = 0: 60,325, Sendling-Westpark 0.40 and flagged.
+
+| District | Ratio 2024 | Ratio 2045 | % places per 1,000 activity | District | Ratio 2024 | Ratio 2045 | % |
+|---|---|---|---|---|---|---|---|
+| Aubing-Lochhausen-Langwied | 0.862 | 0.513 | −40.5 | Maxvorstadt | 0.844 | 0.777 | −7.9 |
+| Feldmoching-Hasenbergl | 0.802 | 0.586 | −26.9 | Neuhausen-Nymphenburg | 0.842 | 0.776 | −7.9 |
+| Trudering-Riem | 0.859 | 0.642 | −25.2 | Laim | 1.186 | 1.103 | −7.0 |
+| Schwabing-Freimann | 0.938 | 0.732 | −22.0 | Sendling | 1.325 | 1.235 | −6.7 |
+| Bogenhausen | 0.811 | 0.651 | −19.8 | Sendling-Westpark | 0.496 | 0.463 | −6.5 |
+| Allach-Untermenzing | 0.589 | 0.488 | −17.2 | Milbertshofen-Am Hart | 0.688 | 0.644 | −6.5 |
+| Berg am Laim | 0.815 | 0.676 | −17.1 | Schwanthalerhöhe | 1.625 | 1.523 | −6.2 |
+| Moosach | 1.063 | 0.895 | −15.8 | Au-Haidhausen | 1.736 | 1.642 | −5.4 |
+| Thalkirchen-…-Solln | 0.789 | 0.687 | −12.9 | Schwabing-West | 0.942 | 0.906 | −3.8 |
+| Ramersdorf-Perlach | 0.739 | 0.653 | −11.6 | Obergiesing-Fasangarten | 1.234 | 1.196 | −3.1 |
+| Pasing-Obermenzing | 0.958 | 0.853 | −11.0 | Hadern | 0.796 | 0.776 | −2.4 |
+| Altstadt-Lehel | 1.814 | 1.616 | −10.9 | Untergiesing-Harlaching | 0.778 | 0.781 | +0.5 |
+| Ludwigsvorstadt-Isarvorstadt | 1.882 | 1.721 | −8.5 | | | | |
+
+**Caveats.**
+- Residents in intermediate years are interpolated, not forecast values. The forecast is Hauptwohnsitz only and its housing assumptions are a snapshot; Nordosten and Münchner Norden lie largely beyond 2045.
+- Jobs are a modelled estimate, with the 2022 value used as the 2024 baseline and held after 2040.
+- Supply is today's timetable. Funded projects (Tram 23/24 Neufreimann, Westtangente section 2, U5 Pasing) and planned ones (U5 Freiham, U4 Nordost) are not included; v4 adds them as scenarios.
+- Scheduled service only.
+
+#### v4: forecast with rail and tram scenarios
 
 **Answer.** By 2045 at w = 1, with no project switched on, city-wide supply falls from 34,425 to 29,822 places per 1,000 activity (−13.37 %). The six funded projects lift that to 32,069 (−6.84 %), which offsets 49 % of the decline. Everything discussed lifts it to 33,593 (−2.42 %), which offsets 82 %.
 
-The largest single contributor is the 2nd Stammstrecke, modelled as the new-tunnel trains plus a 15-minute basic interval on the existing S-Bahn network. It adds +5,272,800 places per weekday net: +3,237,600 from the five tunnel stations and +2,035,200 from lifting 53 Munich S-Bahn stations on S3, S4, S6 and S8 to at least 152 departures. S1 is already above 152; S2, S5, S7 and S20 are excluded. Nothing is removed from the old trunk, so no central district loses supply: Schwanthalerhöhe (1.564 vs 1.523), Neuhausen-Nymphenburg (0.792 vs 0.776) and Maxvorstadt (0.777 = 0.777) end at or above their "none" values.
+The largest single contributor is the 2nd Stammstrecke, modelled as the new-tunnel trains plus a 15-minute basic interval on the existing S-Bahn network. It adds +5,272,800 places per weekday net: +3,237,600 from the five tunnel stations and +2,035,200 from lifting 53 Munich S-Bahn stations on S3, S4, S6 and S8 to at least 152 departures. S1 is already above 152; S2, S5, S7 and S20 are excluded. Nothing is removed from the existing trunk, so no central district loses supply: Schwanthalerhöhe (1.564 vs 1.523), Neuhausen-Nymphenburg (0.792 vs 0.776) and Maxvorstadt (0.777 = 0.777) end at or above their "none" values.
 
 The fastest-shrinking districts still gain little from funded projects: Feldmoching-Hasenbergl and Allach-Untermenzing get nothing, and Trudering-Riem and Bogenhausen only a few percent from the S-Bahn interval. Aubing-Lochhausen-Langwied gets +224,400 places per weekday from the interval on S8 (0.513 → 0.558) and reaches 0.851 only with the unfunded U5 Freiham, whose year is a placeholder.
 
@@ -430,66 +471,35 @@ Ratios are places per 1,000 activity divided by the 2024 city average (34,425) a
 - Tram Johanneskirchen +84,589 (analog 16)
 - Poccistraße, Tram Lerchenauer Feld, U26 and the Augsburg express add 0 (no stations published or already in the 2nd trunk).
 
-**15-minute basic interval by line** (S-Bahn stations inside Munich served today / lifted to 152 / places added per weekday): S1 14 / 0 / 0 · S3 16 / 4 / +88,800 · S4 16 / 16 / +729,600 · S6 15 / 15 / +655,200 · S8 18 / 18 / +561,600. Excluded: S2, S7 and S20 (2017 concept) and S5 (a later reinforcement line not in that concept; including it would add another +2,166,000, revision 4).
+**15-minute basic interval by line** (S-Bahn stations inside Munich served today / lifted to 152 / places added per weekday): S1 14 / 0 / 0 · S3 16 / 4 / +88,800 · S4 16 / 16 / +729,600 · S6 15 / 15 / +655,200 · S8 18 / 18 / +561,600. Excluded: S2, S7 and S20 (not in the 2017 concept) and S5 (a later reinforcement line not in that concept).
 
 **Method.**
 - **Rule 1:** departures = (trains per hour peak × 6 + off-peak × 13) × 2. Where no frequency is published, the analog line's mean weekday departures per Munich station on the reference Wednesday.
 - **Rule 2:** places = departures × the line's capacity per trip (LINE_CAPACITY override, else VEHICLE_CAPACITY; 1,200 per S-Bahn trip).
 - **Rule 3:** Laim inbound restored = today's outbound departures minus today's inbound ones, per line.
-- **Rule 4 (option 2):** the 2nd trunk adds its 2017 start-concept tunnel lines at the 5 tunnel stations (Rule 1), removes nothing from the old trunk (freed slots assumed reused), and applies a 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich it serves today, departures = GREATEST(today, 152), where 152 = 4 trains/h × 19 h × 2 directions. With Laim restored also on, the rule is applied after the restore. Station markers stay on the 5 tunnel stations.
+- **Rule 4:** the 2nd trunk adds its 2017 start-concept tunnel lines at the 5 tunnel stations (Rule 1), removes nothing from the existing trunk (freed slots assumed reused), and applies a 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich it serves today, departures = GREATEST(today, 152), where 152 = 4 trains/h × 19 h × 2 directions. With Laim restored also on, the rule is applied after the restore. Station markers stay on the 5 tunnel stations.
 - **Rule 5:** a project counts from its model opening year, or its risk year when pessimistic. Pessimistic dates change the result only between opening and risk year.
-- **Where the rules live:** all rules are in SQL (the `need`, `sb`, `comps` and `sel` CTEs in `ranking.sql`, and `projects.sql`). With no project switched on, the output is unchanged (R1–R3 in `research/reference-numbers.md`).
+- **Where the rules live:** all rules are in SQL (the `need`, `sb`, `comps` and `sel` CTEs in `ranking.sql`, and `projects.sql`). With no project switched on, the output equals v3 (R1–R3 in section 4).
 
 **Caveats.**
 - Project frequencies are partly analog assumptions.
-- 2nd Stammstrecke: new-tunnel trains plus a 15-minute basic service on all S-Bahn lines except S2, S5, S7 and S20 (2017 concept, unverified line table; S5 is a later reinforcement line not in that concept); old-trunk slots assumed reused. The 2025 BEG tender may swap S2/S3 branches, so the excluded lines may change.
+- 2nd Stammstrecke: new-tunnel trains plus a 15-minute basic service on all S-Bahn lines except S2, S5, S7 and S20 (2017 concept, unverified line table; S5 is a later reinforcement line not in that concept); existing-trunk slots assumed reused. The 2025 BEG tender may swap S2/S3 branches, so the excluded lines may change.
 - Several opening years are placeholders or assumed 2040.
 - Coordinates are partly approximated.
 - Scheduled capacity only, not demand or crowding.
-- Modes and departures by mode are still shown for today's timetable.
+- The mode note ("mostly bus", "mostly rail") refers to today's timetable.
 
-#### Forecast what-if 2024 to 2045, if service stays as it is today (dashboard revision 8, 2026-10-19)
+#### v5: ask the assistant
 
-**Answer.** Munich grows from 1,603,776 residents (2024) to the forecast 1,829,522 (2045). If today's timetable stays unchanged, city-wide supply falls from 34,425 to 29,822 places per 1,000 activity at w = 1 (−13.4 %). Growth is concentrated at the edge of the city, so the outer districts lose most:
-- Aubing-Lochhausen-Langwied −40.5 % (0.86× to 0.51× the 2024 city average; Freiham)
-- Feldmoching-Hasenbergl −26.9 %
-- Trudering-Riem −25.2 %
-- Schwabing-Freimann −22.0 %
-- Bogenhausen −19.8 %
+v5 uses v4's model unchanged; its numbers are v4's. With no what-if, `ranking.sql` returns exactly the v4 output.
 
-Only Untergiesing-Harlaching improves slightly (+0.5 %). On the flag rule (top third for activity density and bottom third for places), no district is flagged in 2024 or 2045 at w = 1. Berg am Laim is flagged in 2034 and 2035 only (2035: activity-density rank 9, places rank 18). By 2045 the outer districts' supply has fallen further, so Berg am Laim drops out. At w = 0, Sendling-Westpark is flagged in 2024 and no longer in 2045.
+- First load is the current year with w = 1.0 and no projects: on the reference date that is 2026, Munich overall −1.66 % (33,853 vs 34,425).
+- "Show 2045 with the funded projects" gives Funded only, 6 projects active, +7.3 M places per weekday net, Munich overall −6.84 % (R4).
+- 2045 None −13.37 % (R3), Everything discussed −2.42 % (R5), 2nd Stammstrecke only −8.65 % (R6).
+- A frequency what-if reuses the 15-minute rule with the frequency as a parameter: extra places = (GREATEST(departures today, trains per hour × hours × 2) − departures today) × capacity per trip. "S4 at least 4 trains/h for 19 h" adds +729,600 places, the same as v4's 15-minute rule for S4.
+- A new-line what-if adds (peak × 6 + off-peak × 13) × 2 departures per station × the mode's capacity per trip.
 
-**Method.**
-- Residents(Y) = pop_2024 + (pop_2045_forecast − pop_2024) × (Y − 2024) / 21, a linear interpolation: the Demografiebericht Teil 2 publishes district values for 2045 only.
-- Jobs(Y) = jobs_2022 + (jobs_2040 − jobs_2022) × (min(Y, 2040) − 2024) / 16. The city's 2022 estimate is used as the 2024 baseline, rising linearly to the 2040 forecast and held after 2040.
-- Supply is today's scheduled timetable, unchanged in every year.
-- The map colour is places per 1,000 activity in year Y divided by the 2024 city average at the same w, a fixed baseline.
-
-Year 2024 reproduces revision 6 exactly at every w: 34,425 city-wide, Sendling-Westpark 0.496, Ludwigsvorstadt-Isarvorstadt 1.882, no flags at w = 1. At w = 0: 60,325, Sendling-Westpark 0.40 and flagged.
-
-| District | Ratio 2024 | Ratio 2045 | % places per 1,000 activity | District | Ratio 2024 | Ratio 2045 | % |
-|---|---|---|---|---|---|---|---|
-| Aubing-Lochhausen-Langwied | 0.862 | 0.513 | −40.5 | Maxvorstadt | 0.844 | 0.777 | −7.9 |
-| Feldmoching-Hasenbergl | 0.802 | 0.586 | −26.9 | Neuhausen-Nymphenburg | 0.842 | 0.776 | −7.9 |
-| Trudering-Riem | 0.859 | 0.642 | −25.2 | Laim | 1.186 | 1.103 | −7.0 |
-| Schwabing-Freimann | 0.938 | 0.732 | −22.0 | Sendling | 1.325 | 1.235 | −6.7 |
-| Bogenhausen | 0.811 | 0.651 | −19.8 | Sendling-Westpark | 0.496 | 0.463 | −6.5 |
-| Allach-Untermenzing | 0.589 | 0.488 | −17.2 | Milbertshofen-Am Hart | 0.688 | 0.644 | −6.5 |
-| Berg am Laim | 0.815 | 0.676 | −17.1 | Schwanthalerhöhe | 1.625 | 1.523 | −6.2 |
-| Moosach | 1.063 | 0.895 | −15.8 | Au-Haidhausen | 1.736 | 1.642 | −5.4 |
-| Thalkirchen-…-Solln | 0.789 | 0.687 | −12.9 | Schwabing-West | 0.942 | 0.906 | −3.8 |
-| Ramersdorf-Perlach | 0.739 | 0.653 | −11.6 | Obergiesing-Fasangarten | 1.234 | 1.196 | −3.1 |
-| Pasing-Obermenzing | 0.958 | 0.853 | −11.0 | Hadern | 0.796 | 0.776 | −2.4 |
-| Altstadt-Lehel | 1.814 | 1.616 | −10.9 | Untergiesing-Harlaching | 0.778 | 0.781 | +0.5 |
-| Ludwigsvorstadt-Isarvorstadt | 1.882 | 1.721 | −8.5 | | | | |
-
-**Caveats.**
-- Residents in intermediate years are interpolated, not forecast values. The forecast is Hauptwohnsitz only and its housing assumptions are a snapshot; Nordosten and Münchner Norden lie largely beyond 2045.
-- Jobs are a modelled estimate, with the 2022 value used as the 2024 baseline and held after 2040.
-- Supply is today's timetable. Funded projects are not included yet (Tram 23/24 Neufreimann, Westtangente section 2, U5 Pasing), nor are planned ones (U5 Freiham, U4 Nordost); the dashboard can add them later as a scenario toggle.
-- Scheduled service only.
-
-Queries: `ranking.sql`, `kpis.sql` and `modes.sql` with `{year!d}` and `{w_jobs!f}`; `trend.sql` (22 years × 25 districts, cached per w). Dashboard: http://127.0.0.1:5100/apps/munich-mobility-planning, revision 8, healthcheck healthy.
+**Caveats.** A what-if is capacity arithmetic, not a plan: demand shifts, crowding, travel time, cost and feasibility are not modelled. It adds to supply in every year shown; departures and the 2024 baseline don't change.
 
 ### Findings file: district-growth.md
 
@@ -580,12 +590,12 @@ Areas are converted from hectares (1 km² = 100 ha). "Verified" means I read the
 | Area | Stadtbezirk | Planned homes / residents / jobs | Timeline and status | Planned transport link |
 |---|---|---|---|---|
 | **Freiham** (Freiham Nord residential plus Freiham Süd business park) | 22 Aubing-Lochhausen-Langwied | Whole new district: **over 25,000 residents** on 3.5 km² in total, of which 2.0 km² is the residential part north of Bodenseestraße. **1st Realisierungsabschnitt:** about 4,500 homes for about 12,000 people on 0.85 km², under construction since 2016, first homes occupied 2019. **2nd Realisierungsabschnitt:** about 6,200 homes for about 16,000 people on about 0.55 km², framework plan (Rahmenplan) approved by the city council in July 2024. Its first building phase, Bebauungsplan Nr. 2154, covers about 2,800 homes for about 7,200 people on 0.27 km². Plus up to 1,200 homes at Eichenauer Straße (competition pending). **Jobs:** about 7,500 in the Freiham Süd business park (1.1 km²), plus up to 1,250 at the Hoffmann SE headquarters. *(verified, stadt.muenchen.de)* | "Gebaut wird bis zum Jahr 2040 in mehreren Abschnitten" (built in several phases up to 2040). The Teil 2 forecast attributes most of district 22's +85 % to Freiham. | **U5 west extension Pasing → Freiham-Zentrum:** added to the Nahverkehrsplan (local transport plan) on 23 Jan 2019, approved by the city council in 2020. Structural work on the end station Freiham-Zentrum, built in advance as a *Vorhaltemaßnahme*, has been under way since May 2024. The section Laimer Platz → Pasing is under construction, with the tunnel breakthrough in Laim reported in Rathaus Umschau 2026. *(verified)* **I found no official opening date for Pasing → Freiham.** Secondary sources mention Pasing about 2030–2035 *(unverified)*. S-Bahn station Freiham (S8) exists today. The planned four-track S4 expansion is part of the Freistaat's "Bahnausbau Region München" programme *(verified, Freiham page)*. |
-| **Neufreimann** (former Bayernkaserne) | 12 Schwabing-Freimann | About **5,500 homes for up to 15,000 people** on about 0.6 km², of which about 1,100 homes are in the private "Heidepark" (0.1 km²). Rental housing only, built mostly by Münchner Wohnen. *(verified)* | Site development since 2019. First residents moved in in April 2025, when 250 homes were completed in Baufeld MU 1(17). WA 12 (190 homes) has been occupied since July 2026. Many projects in phase 1 are at shell stage. Three building phases are to be completed by the early to mid 2030s. *(verified)* | **Tram Münchner Norden:** the Tram 23 extension Schwabing Nord → Neufreimann → U-Bahnhof Kieferngarten (U6), 6 stops (PFA 1), runs diagonally through the quarter. PFA 2 covers Neufreimann → Am Hart (U2), 7 stops, as the new line 24. Groundbreaking was in October 2025. The city council decided the route alignment (Trassierungsbeschluss) for PFA 2 on 23 Jul 2025. Standardised assessment: benefit-cost ratio 2.61 (July 2025). *(verified, Mobilitätsreferat letter of 24 Jul 2026 and letter of 6 Oct 2025)* Opening "end of 2029" and a 4.5-year construction time appear only in search snippets of SWM press releases, which returned 404 when opened *(unverified)*. |
-| **Münchner Nordosten** (Daglfing / Englschalking / Johanneskirchen) | 13 Bogenhausen, 15 Trudering-Riem | **Up to 11,500 homes / 30,000 residents / up to 10,000 jobs.** Study area 6 km². At least half of it stays agriculture and equestrian use. *(verified)* | Winning competition design (rheinflügel severin + bbz) adopted as the planning basis by the council on 27 Apr 2022. Status: "Erstellung Gutachten" (expert studies in progress). Construction "ab den 2030er Jahren", in about 8 phases built according to demand. Also proposed as the site of the Olympic and Paralympic Village. *(verified)* Teil 2 says the development extends "deutlich über den Prognosezeitraum hinaus", i.e. well beyond 2045, so only part of it is in the 2045 forecast. | Planned: **U4 extension** from Arabellapark into the centre of the Nordosten, with an option to Messestadt Riem. **Two tram lines** from the city centre plus a new north–south tram. Buses to run first as an interim service. Fast cycle route to Markt Schwaben. *(verified, project page)* **S8 four-track expansion Daglfing–Johanneskirchen in a tunnel:** this is the long-standing demand of the city council. An earlier city letter said construction would start in 2031 at the earliest, with 12 years of construction for a tunnel. Current status not verified *(unverified)*. **Tram Johanneskirchen:** a Bürgerversammlung recommendation to stop it was discussed on 10 Feb 2026 *(unverified)*. |
+| **Neufreimann** (on the Bayernkaserne site) | 12 Schwabing-Freimann | About **5,500 homes for up to 15,000 people** on about 0.6 km², of which about 1,100 homes are in the private "Heidepark" (0.1 km²). Rental housing only, built mostly by Münchner Wohnen. *(verified)* | Site development since 2019. First residents moved in in April 2025, when 250 homes were completed in Baufeld MU 1(17). WA 12 (190 homes) has been occupied since July 2026. Many projects in phase 1 are at shell stage. Three building phases are to be completed by the early to mid 2030s. *(verified)* | **Tram Münchner Norden:** the Tram 23 extension Schwabing Nord → Neufreimann → U-Bahnhof Kieferngarten (U6), 6 stops (PFA 1), runs diagonally through the quarter. PFA 2 covers Neufreimann → Am Hart (U2), 7 stops, as the new line 24. Groundbreaking was in October 2025. The city council decided the route alignment (Trassierungsbeschluss) for PFA 2 on 23 Jul 2025. Standardised assessment: benefit-cost ratio 2.61 (July 2025). *(verified, Mobilitätsreferat letter of 24 Jul 2026 and letter of 6 Oct 2025)* Opening "end of 2029" and a 4.5-year construction time appear only in search snippets of SWM press releases, which returned 404 when opened *(unverified)*. |
+| **Münchner Nordosten** (Daglfing / Englschalking / Johanneskirchen) | 13 Bogenhausen, 15 Trudering-Riem | **Up to 11,500 homes / 30,000 residents / up to 10,000 jobs.** Study area 6 km². At least half of it stays agriculture and equestrian use. *(verified)* | Winning competition design (rheinflügel severin + bbz) adopted as the planning basis by the council on 27 Apr 2022. Status: "Erstellung Gutachten" (expert studies in progress). Construction "ab den 2030er Jahren", in about 8 phases built according to demand. Also proposed as the site of the Olympic and Paralympic Village. *(verified)* Teil 2 says the development extends "deutlich über den Prognosezeitraum hinaus", i.e. well beyond 2045, so only part of it is in the 2045 forecast. | Planned: **U4 extension** from Arabellapark into the centre of the Nordosten, with an option to Messestadt Riem. **Two tram lines** from the city centre plus a new north–south tram. Buses to run first as an interim service. Fast cycle route to Markt Schwaben. *(verified, project page)* **S8 four-track expansion Daglfing–Johanneskirchen in a tunnel:** this is the long-standing demand of the city council. A city letter said construction would start in 2031 at the earliest, with 12 years of construction for a tunnel. Current status not verified *(unverified)*. **Tram Johanneskirchen:** a Bürgerversammlung recommendation to stop it was discussed on 10 Feb 2026 *(unverified)*. |
 | **Messestadt Riem, 5th Bauabschnitt (Wohnen)** | 15 Trudering-Riem | About **2,500 homes** on about 0.25 km² north of the München–Rosenheim railway, between Kirchtrudering and Messestadt. Messestadt as a whole has 16,000 residents and 10,000 jobs today. *(verified)* | Competition decided July 2022. The revised design by 03 Arch. was selected after May 2023. Bebauungsplan in progress. Teil 2 cites the completion of Messestadt Riem plus Heltauer Straße, Rappenweg and infill on Wasserburger Landstraße as the reason for district 15's +42.5 %. *(verified)* | Existing U2 (Messestadt West / Ost). U4 option to Messestadt via the Nordosten *(verified as an option only)*. |
-| **Quartier an der Lerchenauer Straße** ("Lerchenauer Feld") | 24 Feldmoching-Hasenbergl | **About 1,700 homes, nearly 4,000 residents**, on about 0.25 km². About 500 affordable homes on city-owned land. *(verified)* | Bebauungsplan Nr. 2138 is in force (Rechtskraft). *(verified)* | **Tram Lerchenauer Feld** (formerly "Tram Y-Nord"): Hauptbahnhof – Hochschule München – Nordbad – Petuelring – Schleißheimer Straße, with an end stop at the quarter's market square. The Mobilitätsreferat says it "zu einem späteren Zeitpunkt realisiert werden wird" (will be built later). *(verified)* No date. |
+| **Quartier an der Lerchenauer Straße** ("Lerchenauer Feld") | 24 Feldmoching-Hasenbergl | **About 1,700 homes, nearly 4,000 residents**, on about 0.25 km². About 500 affordable homes on city-owned land. *(verified)* | Bebauungsplan Nr. 2138 is in force (Rechtskraft). *(verified)* | **Tram Lerchenauer Feld** (also called "Tram Y-Nord"): Hauptbahnhof – Hochschule München – Nordbad – Petuelring – Schleißheimer Straße, with an end stop at the quarter's market square. The Mobilitätsreferat says it "zu einem späteren Zeitpunkt realisiert werden wird" (will be built later). *(verified)* No date. |
 | **Eggarten-Siedlung** | 24 Feldmoching-Hasenbergl and 10 Moosach | **About 1,900 homes for more than 4,500 residents**, on about 0.21 km². *(verified)* | Bebauungsplan Nr. 2143, Billigungsbeschluss (draft approval) stage. *(verified)* | Bus routes in the plan. No dedicated rail link found. |
-| **Münchner Norden** (former SEM Nord, Feldmoching-Ludwigsfeld) | 24 Feldmoching-Hasenbergl | **No housing target.** The city says "Den Planungsteams werden keine Zielzahlen … vorgegeben" (no target numbers given to the planning teams). Study area about 9 km², of which only about 2.2 km² is considered developable. *(verified)* | Preliminary studies (*vorbereitende Untersuchungen*) for a possible SEM were decided in 2020. A formal SEM would need a separate Entwicklungssatzung (development bylaw). Press reports say the SEM was dropped in favour of a "kooperatives Stadtentwicklungsmodell" (KOSMO) *(unverified, Abendzeitung)*. Not a firm input to the 2045 forecast. | Planning sketches only: extension of U1 (from OEZ) or U2 (from Feldmoching), Tram Y-Nord/Lerchenauer Feld, new S1 station Feldmoching Nord. "Ohne neue leistungsfähige ÖPNV-Trassen ist kein Wohnungsbau möglich" (no housing without new high-capacity transit). *(verified)* |
+| **Münchner Norden** (SEM Nord study area, Feldmoching-Ludwigsfeld) | 24 Feldmoching-Hasenbergl | **No housing target.** The city says "Den Planungsteams werden keine Zielzahlen … vorgegeben" (no target numbers given to the planning teams). Study area about 9 km², of which only about 2.2 km² is considered developable. *(verified)* | Preliminary studies (*vorbereitende Untersuchungen*) for a possible SEM were decided in 2020. A formal SEM would need a separate Entwicklungssatzung (development bylaw). Press reports say the SEM was dropped in favour of a "kooperatives Stadtentwicklungsmodell" (KOSMO) *(unverified, Abendzeitung)*. Not a firm input to the 2045 forecast. | Planning sketches only: extension of U1 (from OEZ) or U2 (from Feldmoching), Tram Y-Nord/Lerchenauer Feld, new S1 station Feldmoching Nord. "Ohne neue leistungsfähige ÖPNV-Trassen ist kein Wohnungsbau möglich" (no housing without new high-capacity transit). *(verified)* |
 | **PaketPost-Areal** | 9 Neuhausen-Nymphenburg | **1,180 homes, 3,050 new jobs**, on 0.087 km². *(verified)* | Satzungsbeschluss (bylaw adopted) Nov 2025. Bebauungsplan in force since 30 Jun 2026. *(verified)* | Next to Friedenheimer Brücke (S-Bahn trunk line, Tram 16/17 corridor) *(transport link not stated on the page, unverified)*. |
 | **Prinz-Eugen-Park** | 13 Bogenhausen | About 1,800 homes, nearly 600 of them in the timber-built Ökologische Mustersiedlung. *(verified)* | **Complete:** first homes 2019, last building 2021. Already in the 2024 and 2025 counts and part of Bogenhausen's +11.2 % from 2015 to 2025. *(verified)* | n/a |
 | **Neuperlach** | 16 Ramersdorf-Perlach | Teil 2 puts district 16 in the 5,001–10,000 new-homes band and forecasts +15,136 residents. I did not verify individual Neuperlach projects. | *(unverified)* | *(unverified)* |
@@ -594,7 +604,7 @@ Areas are converted from hectares (1 km² = 100 ha). "Verified" means I read the
 
 #### 4. Caveats
 
-1. **Forecast vintage.** The current official forecast is the **Planungsprognose 2025–2045**, base 31 Dec 2024, editorial deadline May 2025, presented on 4 June 2025. It replaces the **Planungsprognose 2023–2040** (Demografiebericht 2023, base end 2022). The new forecast grows more slowly: +0.63 % a year against +0.73 % a year in the old one (Teil 1, printed page 6–7). Do not mix district figures from the two editions. I did not extract the 2023–2040 district table.
+1. **Forecast vintage.** The current official forecast is the **Planungsprognose 2025–2045**, base 31 Dec 2024, editorial deadline May 2025, presented on 4 June 2025. It replaces the **Planungsprognose 2023–2040** (Demografiebericht 2023, base end 2022). The new forecast grows more slowly: +0.63 % a year against +0.73 % a year in the 2023–2040 edition (Teil 1, printed page 6–7). Do not mix district figures from the two editions. I did not extract the 2023–2040 district table.
 2. **Target year mismatch with jobs.** Our jobs forecast is for **2040** (Erwerbstätigenprognose 2025, empirica 2024). The population forecast publishes per-district numbers for **2045 only**. Per-district 2040 values exist only as line charts on each district page ("Bevölkerungsentwicklung, Prognose ab 2025"), not as numbers. Reading them off the charts would be guessing, so I did not do it. The city total for 2040 is given as a number: **1.771 million** (Teil 1, chart of forecast years, PDF and printed page 8). If a 2040 district value is needed, interpolating linearly between 2024 and 2045 is a modelling assumption, not a source value.
 3. **Scenarios.** The Planungsprognose is the most likely path. Teil 1 also gives a lower and an upper migration scenario, at +0.23 % and +1.03 % a year, and a low-fertility scenario at +0.55 % a year. In the low-fertility scenario the city stays under 1.8 million in 2045. Scenarios are only published for the city as a whole, not per district.
 4. **Housing assumptions are a snapshot.** Teil 2 calls the housing numbers it uses a *Momentaufnahme* (a snapshot). Delays, cancelled plans, building costs and interest rates can shift growth in time. The forecast counts only new-build projects of more than 50 homes with new building rights. Growth in districts 13, 22, 15 and 24 depends most on these projects being delivered.
@@ -636,7 +646,7 @@ Areas are converted from hectares (1 km² = 100 ha). "Verified" means I read the
 - S8 Daglfing–Johanneskirchen tunnel, council documents and press (construction start 2031, 12 years for a tunnel): https://risi.muenchen.de/risi/dokument/v/7879934 · https://www.abendzeitung-muenchen.de/muenchen/flughafenlinie-s8-jetzt-kommt-der-tunnel-art-344311
 - Tram Johanneskirchen, BA 13 recommendation of 10 Feb 2026: https://www.muenchen-transparent.de/dokumente/9490929/datei
 - U5 Pasing opening estimates (about 2030–2035): https://www.u-bahn-muenchen.de/netz/u5/ · https://www.tramreport.de/2025/06/06/u-bahnhof-baumschule-laim-gestaltung-vorgestellt/
-- Previous edition, Demografiebericht Teil 2 2023–2040 (not extracted): https://muenchen-transparent.de/dokumente/7822058/datei (download failed because of a TLS certificate error)
+- The 2023–2040 edition, Demografiebericht Teil 2 2023–2040 (not extracted): https://muenchen-transparent.de/dokumente/7822058/datei (download failed because of a TLS certificate error)
 
 ### Findings file: plans-facts.md
 
@@ -781,7 +791,7 @@ Coverage note: BR, SZ, tz and Merkur block the research tool. Their reporting ap
 
 ### What Munich is doing about the gaps (as of 15 Oct 2026)
 
-I compared the gaps found by the four agents with current city plans. The research was done in German across official sources and local media. One limit on coverage: BR, SZ, tz and Merkur block the research crawler. Their reporting is included only where the ADFC München media reviews (Radfahren in den Medien) carry it. The other media sources are Abendzeitung, t-online München, tramreport.de, VCD and Pro Bahn. Items marked (unverified) were seen only in search results, not on the source page.
+I compared the gaps found with SQL on `MUNICH_DATASET` (scheduled transport and cycle-path supply per district, roadworks near stops, the bike counters) with current city plans. The research was done in German across official sources and local media. One limit on coverage: BR, SZ, tz and Merkur block the research crawler. Their reporting is included only where the ADFC München media reviews (Radfahren in den Medien) carry it. The other media sources are Abendzeitung, t-online München, tramreport.de, VCD and Pro Bahn. Items marked (unverified) were seen only in search results, not on the source page.
 
 #### Summary
 
@@ -840,12 +850,12 @@ Impact means how severe the gap is, how many residents and departures it affects
 
 S-Bahn-Nordring, Tram Johanneskirchen and U26 are real projects but do not touch the flagged districts. I found no current debate on a Citymaut, a cable car or a maglev.
 
-#### Corrections to our own analysis
+#### Notes on the dataset
 
 - **Bus 68 disappears on 13 Dec 2026.** The MVV feed runs 1 Sep–30 Nov 2026 and predates the 2027 timetable, so the "bus 68: 142 roadworks" finding expires in December.
 - **Frankfurter Ring 149:** the city's end date (June 2027) is later than in our data.
 - **Nordbad:** the MVG switch project in our area ended May 2026. The open records with 2027 dates are probably the follow-on Fernwärme and track work.
-- **Erhardtstr. counter:** the leadership agent placed it in Ludwigsvorstadt-Isarvorstadt. It sits at the Au-Haidhausen border, so check the district assignment.
+- **Erhardtstr. counter:** the dataset assigns it to Ludwigsvorstadt-Isarvorstadt. It sits at the Au-Haidhausen border, so check the district assignment.
 
 #### Conflicts between sources
 
@@ -974,7 +984,7 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 
 - **Route:** About 1 km, branching from the St. Emmeram line at Cosimastraße.
 - **Stops [verified, MVG FAQ]:** Ringofenweg and Johanneskirchner Straße, the loop at S8 Johanneskirchen, elsewhere called "Johanneskirchen Bf".
-- **Status:** Plan approval has been running since end 2022. No construction date. Earlier targets (end 2025, then Q2/2025 approval) were missed.
+- **Status:** Plan approval has been running since end 2022. No construction date. The targets of end 2025, then Q2/2025 approval, were missed.
 - **Funding conflict:** The coalition agreement says "only with funding commitments", while MVG says it is financed from grants plus city budget. I set funded = 0.
 - **Line and headway:** not published; analog 16.
 
@@ -1091,7 +1101,6 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 - https://www.muenchenwiki.de/wiki/Tram-Nordtangente (Nordtangente stops)
 - Caller background: "U5 Freiham vote postponed Oct 2026; 2040s"; "U9 2040s"
 
-
 ## Appendix: ranking.sql (v5 copy)
 
 The query from `dashboards/munich-mobility-planning-v4/queries/ranking.sql`, plus the v5 what-if change: the `ex_raw` and `ex` CTEs and `+ COALESCE(ex.add_places, 0)` in `m`.
@@ -1192,7 +1201,7 @@ comps AS (
     LEFT JOIN laim ON ps."project_id" = 'laim_inbound_restore' AND laim.line = ps."line"
     LEFT JOIN ana ON ana.line_mode = ps."mode" AND ana.line = ps."analog_line"
     UNION ALL
-    -- rule 4: 2nd trunk = new-tunnel trains (above) plus a 15-minute basic interval; nothing removed from the old trunk (slots reused).
+    -- rule 4: 2nd trunk = new-tunnel trains (above) plus a 15-minute basic interval; nothing removed from the existing trunk (slots reused).
     -- every station a non-excluded S-Bahn line serves today: departures_new = GREATEST(departures_today, 152) = 4/h x 19 h x 2 directions
     SELECT 'stammstrecke2', 'upgraded: 15-minute basic interval', sb.district_no, sb.station_id, NULL, NULL, NULL, 'S-Bahn', sb.line,
            '15-min basic interval: GREATEST(today, 152)', GREATEST(sb.dep_today, 152) - sb.dep_today, sb.capacity, NULL

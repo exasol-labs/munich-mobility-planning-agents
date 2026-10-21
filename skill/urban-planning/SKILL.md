@@ -32,7 +32,7 @@ Show every SQL statement, run it through the read-only `exasol` MCP server, show
 When the user asks to build version N, or a dashboard from the series:
 1. Read `{{REPO}}/dashboards/<app>/README.md`, which is the spec. Read the previous version's folder as your starting point.
 2. **Build it** by extending the previous version, doing exactly what the spec adds. Show the key SQL and run it once. Check it against the numbers in `research/reference-numbers.md`.
-3. **Deploy it** with the playbook recipe: `app_create_exasol_dashboard` (delete the scaffold's sample `queries/business/*` and `queries/system/*`, which fail their own smoke test), copy the files into the draft workspace with `cp` (`app_put_files` once dropped a non-breaking space), then `app_deploy_draft` and `app_run_healthcheck`. Give the URL `http://127.0.0.1:5100/apps/<app>`.
+3. **Deploy it** with the playbook recipe: `app_create_exasol_dashboard` (delete the scaffold's sample `queries/business/*` and `queries/system/*`, which fail their own smoke test), copy the files into the draft workspace with `cp`, which keeps every byte (including non-breaking spaces) intact, then `app_deploy_draft` and `app_run_healthcheck`. Give the URL `http://127.0.0.1:5100/apps/<app>`.
 4. **Verify like a browser.** The map must render on first load. Never return `no_update` on the initial call for an output the map depends on. Nothing may scroll by itself.
 
 When the user only wants to **deploy the finished version**, copy `{{REPO}}/dashboards/<app>/` as it is (steps 3–4), and compare its numbers with the reference.
@@ -44,7 +44,7 @@ When the user only wants to **deploy the finished version**, copy `{{REPO}}/dash
 It needs an OpenAI key in `{{REPO}}/secrets/openai_api_key`, linked by `install.py`. Never read, print or ask for the key. If it's missing, tell the user to follow `secrets/README.md`.
 
 ## What the data can't answer
-Ridership, crowding, delays and live traffic: the data is scheduled service only, and places offered means capacity, not use. Capacities are planning values per mode. Jobs are a modelled estimate. Population between 2024 and 2045 is interpolated. The project dates and frequencies are assumptions from research, and the 2nd Stammstrecke line table is unverified. Cycle traffic is known at five counters only.
+Ridership, crowding, delays and live traffic: the data is scheduled service only, and places offered means capacity, not use. Capacities are planning values per mode. Jobs are a modelled estimate. Population between 2024 and 2045 is interpolated. The project dates and frequencies are assumptions from research, and the 2nd Stammstrecke line table is unverified. Cycle traffic is measured at six counter stations, five of them with data.
 
 ## Report format
 The answer in three to five sentences, the key table (top or bottom districts), the main SQL, what the data can't answer (three to five bullets), and the dashboard URL.

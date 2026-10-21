@@ -89,7 +89,7 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 
 - **Route:** About 1 km, branching from the St. Emmeram line at Cosimastraße.
 - **Stops [verified, MVG FAQ]:** Ringofenweg and Johanneskirchner Straße, the loop at S8 Johanneskirchen, elsewhere called "Johanneskirchen Bf".
-- **Status:** Plan approval has been running since end 2022. No construction date. Earlier targets (end 2025, then Q2/2025 approval) were missed.
+- **Status:** Plan approval has been running since end 2022. No construction date. The targets of end 2025, then Q2/2025 approval, were missed.
 - **Funding conflict:** The coalition agreement says "only with funding commitments", while MVG says it is financed from grants plus city budget. I set funded = 0.
 - **Line and headway:** not published; analog 16.
 

@@ -5,10 +5,10 @@
 table per file, named after the file. The portal download is nested (one
 sub-folder per dataset), uses German column names, mixed date formats, UTM
 coordinates (EPSG:25832) in some files and WGS84 lat/lon in others. This script
-fixes all of that once, so every agent can join the tables with plain SQL.
+fixes all of that once, so the tables join with plain SQL.
 
     python3 prepare_dataset.py ~/Downloads/munich-open-data.zip --out ~/munich-dataset
-    EXAKIT_SCHEMA=MUNICH_DATASET exakit data-load ~/munich-open-data
+    EXAKIT_SCHEMA=MUNICH_DATASET exakit data-load ~/munich-dataset
 
 Pure standard library. No pandas, no pyproj.
 
@@ -493,7 +493,7 @@ def district_population() -> list[dict]:
 
 
 # Planned rail and tram projects -> PT_PROJECT_STATIONS. One row per new station (or existing station gaining a
-# line), curated from official sources in scripts/data/pt_projects.csv (see the source and verified columns).
+# line), curated from official sources in data/source/pt_projects.csv (see the source and verified columns).
 # district_no comes from the station coordinates against the district polygons, like every other point table.
 PT_PROJECTS_SOURCE = Path(__file__).resolve().parent.parent / "data" / "source" / "pt_projects.csv"
 ASSUMED_OPENING_YEAR = 2040  # used only when a project has no published opening year; flagged in opening_year_assumed

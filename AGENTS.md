@@ -1,6 +1,6 @@
 # AGENTS.md: run this tutorial end to end as an agent
 
-This repo is a tutorial that an AI coding agent (Claude Code, Codex, Cursor …) can execute on the user's behalf, step by step. Humans read [README.md](README.md) and [tutorial/](tutorial/). **Agents follow this runbook.** Every step has a command, a check that must pass before you continue, and a note where only the human can act.
+This repo is a tutorial that an AI coding agent (Claude Code, Codex, Cursor …) can execute on the user's behalf, step by step. Humans read [README.md](README.md) and [tutorial/](tutorial/). **Agents follow the steps below.** Every step has a command, a check that must pass before you continue, and a note where only the human can act.
 
 ## Ground rules for the agent
 - Work from the repo root. Run the steps in order; don't skip a check. On a failure, read [tutorial/10-troubleshooting.md](tutorial/10-troubleshooting.md), apply the matching fix and re-run the check. If it still fails, stop and report.
@@ -10,7 +10,7 @@ This repo is a tutorial that an AI coding agent (Claude Code, Codex, Cursor …)
 - **Verify dashboards like a browser:** use `scripts/check_dashboard.py`, not your own reading of the code.
 - **Metric units only.** State what the data can't answer: scheduled service, with no passengers or delays.
 
-## Runbook
+## Steps
 
 | # | Step | Do | Check (must pass) | Human needed? |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ This repo is a tutorial that an AI coding agent (Claude Code, Codex, Cursor …)
 ### Deploy a finished dashboard (Dash Server MCP tools)
 1. `apps_list`. If `<app>` doesn't exist: `app_create_exasol_dashboard{name: "<app>", profile_name: "starter-kit", title: "Munich Mobility Planning"}` (cycling: "Munich Cycling Coverage").
 2. Workspace: `~/.exasol-starter-kit/dash-server/instance/workspaces/_git_worktrees/<app>/apps/<app>/`. Delete the scaffold's `queries/business/` and `queries/system/`, which fail their own smoke test.
-3. Copy everything from `dashboards/<app>/` into the workspace with `cp -R`. Don't use `app_put_files`: it once dropped a non-breaking space. Keep the scaffold's `dash_server_exasol.py` if the repo has none.
+3. Copy everything from `dashboards/<app>/` into the workspace with `cp -R`. Don't use `app_put_files`: it can drop non-breaking spaces. Keep the scaffold's `dash_server_exasol.py` if the repo has none.
 4. `app_deploy_draft{name: "<app>", deployment_target: "live", auto_rollback_on_health_failure: true}`, then `app_run_healthcheck{name: "<app>"}` must be healthy. Windows: `app_build` → `app_run_healthcheck` → `app_promote_revision`.
 5. `python3 scripts/check_dashboard.py <app>`.
 6. On a git conflict or the "20 parallel connections" error, wait a few seconds and retry once. After many deploys, run `exakit stop && exakit start`.

@@ -41,7 +41,7 @@ The repo is agent-ready. Once the starter kit is installed (chapter 1.1, the one
 ```
 Run this tutorial end to end per AGENTS.md: load the data, install the agent, deploy all six dashboards, and verify each step.
 ```
-The agent follows [AGENTS.md](AGENTS.md). It's a runbook with a check after every step (`scripts/verify_data.py`, `scripts/verify_numbers.py`, `scripts/check_dashboard.py`, `scripts/check_all.py`). It stops where only you can act: installing the kit, restarting the session to load new tools, and putting your OpenAI key in `secrets/`.
+The agent follows [AGENTS.md](AGENTS.md). It lists the steps with a check after each one (`scripts/verify_data.py`, `scripts/verify_numbers.py`, `scripts/check_dashboard.py`, `scripts/check_all.py`). It stops where only you can act: installing the kit, restarting the session to load new tools, and putting your OpenAI key in `secrets/`.
 
 ## Repo map
 
@@ -56,7 +56,7 @@ The agent follows [AGENTS.md](AGENTS.md). It's a runbook with a check after ever
 | [secrets/](secrets/README.md) | Where **your** OpenAI key goes (gitignored, never committed) |
 | [scripts/](scripts/) | `load_data.py` (load and verify the data), `verify_data.py`, `verify_numbers.py` (the model's reference numbers), `check_dashboard.py` (first-render check of a deployed app), `check_all.py`, and the optional `prepare_dataset.py` (rebuild the CSVs from the portal download) |
 | [tests/expected.json](tests/expected.json) | The expected row counts and reference numbers the checks compare against |
-| [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md) | The runbook for an AI agent driving the whole tutorial |
+| [AGENTS.md](AGENTS.md) · [CLAUDE.md](CLAUDE.md) | The step-by-step instructions for an AI agent driving the whole tutorial |
 
 ## Honest about the data
 The MVV data is the **scheduled** timetable. It has no passenger counts, delays or crowding, so "well served" means *capacity offered*, not use. Jobs per district are a modelled city estimate, and the population between 2024 and 2045 is interpolated to the official forecast. Every dashboard says so on the page, and the agent says so when a question drifts there.
