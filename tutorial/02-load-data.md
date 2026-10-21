@@ -12,7 +12,7 @@ python3 scripts/load_data.py
 It downloads the zip from the release (if `data/munich-dataset.zip` isn't there yet), checks its SHA-256, unzips it to `data/munich-dataset/`, loads every table that doesn't exist yet into `MUNICH_DATASET`, and verifies the row counts. It never appends to an existing table. Run it again any time; it only does what's missing. If that worked, skip to 2.3.
 
 ## 2.1b Or by hand: download and unzip
-Download `munich-dataset.zip` from the URL in `data/dataset.json` (the repo's *Releases* page, tag `data-v2`) into `data/`, then:
+Download `munich-dataset.zip` from the URL in `data/dataset.json` (the repo's *Releases* page, tag `data-v1`) into `data/`, then:
 ```bash
 unzip -o data/munich-dataset.zip -d data/
 ```

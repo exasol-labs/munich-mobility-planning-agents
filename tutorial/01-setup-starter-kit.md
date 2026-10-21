@@ -34,8 +34,8 @@ Open <http://127.0.0.1:5100> in a browser. That's where your dashboards will app
 
 ## 1.3 Get this repo
 ```bash
-git clone https://github.com/Sheetaldharshan200/munich-mobility-agents.git
-cd munich-mobility-agents
+git clone https://github.com/exasol-labs/munich-mobility-planning-agents.git
+cd munich-mobility-planning-agents
 ```
 All later commands run from this folder.
 

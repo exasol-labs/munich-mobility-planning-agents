@@ -1,6 +1,6 @@
 # Data
 
-The dataset is published as a **GitHub release asset**, not in git: `munich-dataset.zip`, 18 MB. [dataset.json](dataset.json) has the URL (release `data-v2`), the size and the SHA-256 checksum. `python3 scripts/load_data.py` downloads, checks and loads it. The zip holds one folder, `munich-dataset/`, with 20 load-ready CSVs: one table each in schema `MUNICH_DATASET`. They are cleaned, converted to WGS84 coordinates, and tagged with `district_no` (1–25) by point-in-polygon, so every district join is a plain equality join. Loading is described in [tutorial chapter 2](../tutorial/02-load-data.md). Column-level documentation is in [skill/munich-mobility-agents/references/data-model.md](../skill/munich-mobility-agents/references/data-model.md).
+The dataset is published as a **GitHub release asset**, not in git: `munich-dataset.zip`, 18 MB. [dataset.json](dataset.json) has the URL (release `data-v1`), the size and the SHA-256 checksum. `python3 scripts/load_data.py` downloads, checks and loads it. The zip holds one folder, `munich-dataset/`, with 20 load-ready CSVs: one table each in schema `MUNICH_DATASET`. They are cleaned, converted to WGS84 coordinates, and tagged with `district_no` (1–25) by point-in-polygon, so every district join is a plain equality join. Loading is described in [tutorial chapter 2](../tutorial/02-load-data.md). Column-level documentation is in [skill/munich-mobility-agents/references/data-model.md](../skill/munich-mobility-agents/references/data-model.md).
 
 | Table | Rows | Content | Source |
 |---|---:|---|---|
