@@ -1,6 +1,6 @@
 # MUNICH_DATASET data model
 
-Schema `MUNICH_DATASET`, loaded by `exakit data-load` (with `EXAKIT_SCHEMA=MUNICH_DATASET`) from the flat folder that `scripts/prepare_dataset.py` writes (`data/munich-dataset`). One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views` because a CSV load may leave dates and decimals as VARCHAR.
+Schema `MUNICH_DATASET`, loaded with `exakit data-load` from the unzipped folder `data/munich-dataset` (see [tutorial chapter 2](../tutorial/02-load-data.md)). One table per file, table name = file name upper-cased. Column names below are the CSV headers; confirm their types with `describe_exasol_tables_and_views`.
 
 **Column names are lowercase and case-sensitive.** exapump creates them exactly as in the CSV header, so every column must be double-quoted in SQL: `SELECT "district_no", "population" FROM MUNICH_DATASET.DISTRICTS`. Unquoted `district_no` fails with "object DISTRICT_NO not found". Table and schema names are upper case and need no quotes.
 
@@ -29,7 +29,7 @@ All coordinates are **WGS84** (`lat`, `lon` in degrees). Every point table carri
 | jobs_2040_forecast | the city's forecast for 2040 |
 | basis, source | LHM Referat für Stadtplanung, Erwerbstätigenprognose 2025 (empirica 2024), Tabelle 3 |
 
-A modelled city estimate, not a count: no open per-district employment count exists. No licence stated, so internal analysis only. Activity density = (`population` + `jobs_2022`) / `area_km2`.
+A modeled city estimate, not a count: no open per-district employment count exists. No license stated, so internal analysis only. Activity density = (`population` + `jobs_2022`) / `area_km2`.
 
 ### DISTRICT_POPULATION (25 rows) — residents per district, past and forecast
 | column | meaning |
@@ -40,10 +40,10 @@ A modelled city estimate, not a count: no open per-district employment count exi
 | new_homes_2025_2045 | assumed new-build band (text, e.g. `>10,000`) |
 | source | sources of counts and forecast |
 
-### PT_PROJECT_STATIONS (88 rows, 17 projects) — planned rail and tram projects, one row per station and line
-Curated in `data/source/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are re-routed, not purely added.
+The forecast gives district values for 2045 only; in the model, years after the 2024 count are interpolated (state it as such), even though `pop_2025` is a count. Jobs are forecast for 2040 (`DISTRICT_EMPLOYMENT.jobs_2040_forecast`).
 
-The forecast gives district values for 2045 only; any year in between is an interpolation (state it as such). Jobs are forecast for 2040 (`DISTRICT_EMPLOYMENT.jobs_2040_forecast`).
+### PT_PROJECT_STATIONS (88 rows, 17 projects) — planned rail and tram projects, one row per station and line
+Curated in `data/source/pt_projects.csv` (sources and notes per row). Columns: `project_id`, `project_name`, `mode` (a `line_mode` value), `line`, `station_name`, `lat`, `lon`, `district_no` (point-in-polygon), `station_is_new` (per mode), `opening_year`, `opening_year_risk`, `opening_year_model` (= `opening_year`, or 2040 when none is published; then `opening_year_assumed` = 1), `status` (in_operation / under_construction / approved / planning / on_hold / blocked), `funded`, `trains_per_hour_peak`, `trains_per_hour_offpeak` (per direction and line), `analog_line` (an existing line whose weekday service is the proxy when no frequency is published), `source_url`, `verified`, `note`. Rows with `station_name = 'unknown'` have no stops published and add no supply. The 2. Stammstrecke line table (2017 start concept) is unverified; its lines are rerouted, not purely added.
 
 ### ROADWORKS (~5,700 rows) — current and planned roadworks, four-week horizon
 | column | meaning |
@@ -53,7 +53,7 @@ The forecast gives district values for 2045 only; any year in between is an inte
 | affected_areas | e.g. Gehweg, Fahrbahn, Radweg, Parken (concatenated) |
 | description | free text (German) |
 | impact | e.g. Vollsperrung, Halbseitige Sperre, Wegfall einer Fahrspur, Fahrbahn verengt, Gehweg gesperrt |
-| kind | type of works |
+| kind | type of work |
 | start_date, end_date | YYYY-MM-DD (start_raw / end_raw keep the original) |
 | centroid_lat, centroid_lon, district_no | location |
 | shape_wkt | polygon in WGS84 |
@@ -99,13 +99,13 @@ Values (researched 2026-10-16 from MVG in Zahlen 2026, MVG vehicle pages, Siemen
 | capacity_per_trip | replaces the mode value for this line: U1/U2/U3/U5/U6/U8 930 (six-car), U4/U7 580 (4-car A/B), tram 20 257 (coupled Avenio pair), MetroBus 50–63 and 68 100 (articulated) |
 | basis, sources | why, and where from |
 
-Use `COALESCE(line override, mode value)`; the snippet does it. These are planning values, not measured loads. A departure weighted by `capacity_per_trip` is **places offered**. Use places for supply questions (a U-Bahn train is not a bus), departures for frequency questions, and `runs_on_street = 1` for what surface roadworks can disrupt.
+Use `COALESCE(line override, mode value)`. These are planning values, not measured loads. A departure weighted by `capacity_per_trip` is **places offered**. Use places for supply questions (a U-Bahn train is not a bus), departures for frequency questions, and `runs_on_street = 1` for what surface roadworks can disrupt.
 
 ### BIKE_COUNTS_DAILY (~970 rows) — permanent bicycle counters, one row per counter per day, with weather
 | column | meaning |
 |---|---|
 | count_date | YYYY-MM-DD, Jan–Jul 2026 |
-| station | Arnulf, Erhardt, Hirsch, Kreuther, Margareten, Olympia |
+| station | Arnulf, Erhardt, Hirsch, Kreuther, Olympia (Margareten has no counts) |
 | dir_1, dir_2, total | counts per direction and total |
 | temp_min_c, temp_max_c | °C |
 | rain_mm, cloud_cover_pct, sunshine_hours | weather that day |
@@ -114,7 +114,7 @@ Use `COALESCE(line override, mode value)`; the snippet does it. These are planni
 count_date, time_start, time_end (HH:MM), station, dir_1, dir_2, total.
 
 ### BIKE_COUNT_STATIONS (6 rows)
-station, station_name, lat, lon, direction_1, direction_2, district_no. (Arnulf is missing in May–July 2026.)
+station, station_name, lat, lon, direction_1, direction_2, district_no. (Margareten has no counts in the data; Arnulf is missing in May–July 2026.)
 
 ### CYCLING_INFRASTRUCTURE (~21,000 rows) — cycle-path segments maintained by the city
 segment_id, street, length_m, path_type (e.g. Getrennter Rad- und Gehweg, Radfahrstreifen, Fahrradstraße …), start_lat/lon, end_lat/lon, mid_lat/lon, district_no.
@@ -124,18 +124,18 @@ trip_no, start_time, end_time, start_lat/lon, end_lat/lon, rental_is_station, re
 
 ## Joins
 - District rollups: `X.district_no = DISTRICTS.district_no` for stops, roadworks, cycle segments, counters.
-- Departures per stop: `MVV_STOP_TIMES st JOIN MVV_TRIPS t ON st."trip_id" = t."trip_id" JOIN MVV_ROUTES r ON t."route_id" = r."route_id" JOIN MVV_CALENDAR c ON t."service_id" = c."service_id"` — filter `c."tuesday" = 1` (or any weekday) and a date inside the feed window for a typical weekday.
-- Places offered: add `JOIN VEHICLE_CAPACITY v ON v."line_mode" = r."line_mode"` and `SUM(v."capacity_per_trip")` instead of `COUNT(*)`.
-- Proximity: filter both sides to the same `district_no` (or neighbouring ones) first, then apply the distance below. A full cross join of roadworks × stops is 160M pairs; the district filter cuts it to a few million, which Exasol handles in seconds.
+- Departures per stop: `MVV_STOP_TIMES st JOIN MVV_TRIPS t ON st."trip_id" = t."trip_id" JOIN MVV_ROUTES r ON t."route_id" = r."route_id" JOIN MVV_CALENDAR c ON t."service_id" = c."service_id"` — filter to the services running on the reference weekday, Wednesday 21 Oct 2026: `MVV_CALENDAR` with `wednesday = 1` and the date between `start_date` and `end_date`, plus the services added (`exception_type = 1`) and minus those removed (`exception_type = 2`) on that date in `MVV_CALENDAR_DATES`.
+- Places offered: add `JOIN VEHICLE_CAPACITY v ON v."line_mode" = r."line_mode" LEFT JOIN LINE_CAPACITY l ON l."line" = r."route_short_name" AND l."line_mode" = r."line_mode"` and `SUM(COALESCE(l."capacity_per_trip", v."capacity_per_trip"))` instead of `COUNT(*)`.
+- Proximity: prefilter with a bounding box (e.g. `b."stop_lat" BETWEEN a."centroid_lat" - 0.0015 AND a."centroid_lat" + 0.0015`, same for longitude), then apply the distance below. Don't restrict pairs to the same district: that drops pairs across district borders.
 
-## Haversine distance in metres (Exasol SQL)
+## Haversine distance in meters (Exasol SQL)
 ```sql
 2 * 6371000 * ASIN(SQRT(
     POWER(SIN(RADIANS(b."lat" - a."lat") / 2), 2) +
     COS(RADIANS(a."lat")) * COS(RADIANS(b."lat")) * POWER(SIN(RADIANS(b."lon" - a."lon") / 2), 2)
 )) AS distance_m
 ```
-Exasol also has GIS functions (`ST_GEOMFROMTEXT`, `ST_POINT`, `ST_CONTAINS`, `ST_DISTANCE`, `ST_INTERSECTS`) on `GEOMETRY` columns; `polygon_wkt` and `shape_wkt` can be wrapped in `ST_GEOMFROMTEXT(...)` for point-in-polygon or intersection questions. Distances from `ST_DISTANCE` on lat/lon are in degrees, so prefer the haversine above for metres.
+Exasol also has GIS functions (`ST_GEOMFROMTEXT`, `ST_POINT`, `ST_CONTAINS`, `ST_DISTANCE`, `ST_INTERSECTS`) on `GEOMETRY` columns; `polygon_wkt` and `shape_wkt` can be wrapped in `ST_GEOMFROMTEXT(...)` for point-in-polygon or intersection questions. Distances from `ST_DISTANCE` on lat/lon are in degrees, so prefer the haversine above for meters.
 
 ## Example
 ```sql
@@ -150,7 +150,7 @@ GROUP BY 1, 2 ORDER BY 3 DESC;
 ## Known gaps (say them)
 - No passenger counts, delays, crowding, live traffic or event data.
 - Vehicle capacities are planning values per mode, not the formation of each individual trip.
-- Six counters for the whole city; Arnulf missing May–July.
-- Roadworks horizon is the next four weeks from the download date (September 2026 snapshot).
+- Six counters for the whole city, five with data: Margareten has none, Arnulf is missing May–July.
+- The roadworks horizon is the next four weeks from the download date (September 2026 snapshot).
 - GTFS `shapes` is empty in this feed, so route geometry is not available; use stop sequences.
 - Population figures are a point-in-time snapshot from the portal.

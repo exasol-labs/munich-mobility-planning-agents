@@ -5,16 +5,16 @@ Data: `MUNICH_DATASET` on Exasol, read-only user `mcp_readonly`. Every number be
 
 ## Answer
 
-Munich has 1,049.4 km of cycle path once connectors and Dummy segments are taken out (1,044.5 km of it inside the 25 districts). That is 875.2 km at the default quality weights, or 0.311 weighted km per 1,000 residents + jobs in 2024. **Per person, the dense inner districts are the least served:** Altstadt-Lehel (0.34× the city average), Maxvorstadt (0.45×), Ludwigsvorstadt-Isarvorstadt (0.46×), Au-Haidhausen (0.56×) and Schwanthalerhöhe (0.60×). All five are in the densest third, and their networks are among the densest by area (1.5× to 2.2× per km²). Au-Haidhausen (0.56× per person, 1.60× per km²) and Schwabing-West (0.88× vs 2.12×) show the same split: lots of path per km², not much per person. **Per km², the outer districts are thin:** Aubing-Lochhausen-Langwied (0.34×), Allach-Untermenzing (0.40×) and Feldmoching-Hasenbergl (0.44×). If no paths are added, growth to 2045 takes the city average down to 0.270 km per 1,000 activity. The largest decline is Aubing-Lochhausen-Langwied, from 1.20× to 0.72× (−40.5 %), because of the Freiham build-out. This measures supply only, not use, quality on the ground or safety.
+Munich has 1,049.4 km of cycle path once connectors and Dummy segments are taken out (1,044.5 km of it inside the 25 districts). That is 875.2 km at the default quality weights, or 0.311 weighted km per 1,000 residents + jobs in 2024. **Per person, the dense inner districts are the least served:** Altstadt-Lehel (0.34× the city average), Maxvorstadt (0.45×), Ludwigsvorstadt-Isarvorstadt (0.46×), Au-Haidhausen (0.56×) and Schwanthalerhöhe (0.60×). All five are in the densest third, and their networks are among the densest by area (1.5× to 2.2× per km²). Au-Haidhausen (0.56× per person, 1.60× per km²) and Schwabing-West (0.88× vs 2.12×) show the same split: lots of path per km², not much per person. **Per km², the outer districts are thin:** Aubing-Lochhausen-Langwied (0.34×), Allach-Untermenzing (0.40×) and Feldmoching-Hasenbergl (0.44×). If no paths are added, growth to 2045 takes the city average down to 0.270 km per 1,000 activity. The largest decline is Aubing-Lochhausen-Langwied, from 1.20× to 0.71× (−40.5 %), because of the Freiham build-out. This measures supply only, not use, quality on the ground or safety.
 
 ## Model
 
 - Source `CYCLING_INFRASTRUCTURE`, without `Übergang`, `Anschlussabschnitt` (connectors) and `Dummy`. 13 segments (4.9 km) have no district and are left out of the district figures.
 - Direction factor 2 for `… (Zweirichtungsradweg)`, else 1.
-- Default weights (assumptions, adjustable on the dashboard, passed as `!f` placeholders, validated to 0–1): Radweg 1.0 · Fahrradstraße 1.0 · Getrennter Rad- und Gehweg 0.8 · Radfahr-/Schutzstreifen 0.6 · Gemeinsamer Geh- und Radweg 0.5 · Gehweg Radverkehr frei 0.3.
-- Activity(Y) = residents(Y) + w × jobs(Y). Residents are interpolated from `pop_2024` to `pop_2045_forecast`. Jobs use `jobs_2022` as the 2024 baseline, rise linearly to `jobs_2040_forecast` and are held after 2040. This is the same `dem` CTE as `munich-mobility-planning-v4`.
-- Per person ratio = (weighted km per 1,000 activity in Y) ÷ (city weighted km per 1,000 activity in **2024**, same w and weights).
-- Per km² ratio = (weighted km ÷ `area_km2`) ÷ (city total ÷ city area). It does not depend on the year.
+- Default weights (assumptions, adjustable on the dashboard, each between 0 and 1): Radweg 1.0 · Fahrradstraße 1.0 · Getrennter Rad- und Gehweg 0.8 · Radfahr-/Schutzstreifen 0.6 · Gemeinsamer Geh- und Radweg 0.5 · Gehweg Radverkehr frei 0.3.
+- Activity(Y) = residents(Y) + w × jobs(Y). Residents are interpolated from `pop_2024` to `pop_2045_forecast`. Jobs use `jobs_2022` as the 2024 baseline, rise linearly to `jobs_2040_forecast` and are held after 2040. This is the same demand model as the planning series.
+- Per-person ratio = (weighted km per 1,000 activity in Y) ÷ (city weighted km per 1,000 activity in **2024**, same w and weights).
+- Per-km² ratio = (weighted km ÷ `area_km2`) ÷ (city total ÷ city area). It does not depend on the year.
 
 ## Key SQL
 
@@ -97,7 +97,7 @@ City average per km²: 2,817 weighted m per km². High-quality share = cycle tra
 
 | District | 2024 ratio | 2045 ratio | change in km per 1,000 activity |
 |---|---|---|---|
-| Aubing-Lochhausen-Langwied | 1.20 | 0.72 | −40.5 % |
+| Aubing-Lochhausen-Langwied | 1.20 | 0.71 | −40.5 % |
 | Feldmoching-Hasenbergl | 1.39 | 1.02 | −26.9 % |
 | Trudering-Riem | 1.14 | 0.86 | −25.2 % |
 | Schwabing-Freimann | 0.97 | 0.75 | −22.0 % |
@@ -123,19 +123,19 @@ Separated cycle and footpath 583.5 · Shared footpath 299.6 · Cycle track and c
 | Bad-Kreuther-Str. | Berg am Laim | 686 | 32.5 % | 2026-01-01 to 2026-07-31 |
 | Margaretenstr. (Harras) | Sendling-Westpark | no data | – | – |
 
-The busiest counter (Erhardtstraße) sits in one of the districts with the least network per person (Ludwigsvorstadt-Isarvorstadt, 0.46×). Demand there is real, but one counter cannot stand for a whole district.
+The busiest counter (Erhardtstraße) sits in one of the districts with the least network per person (Ludwigsvorstadt-Isarvorstadt, 0.46×). Demand there is high, but one counter cannot stand for a whole district.
 
 ## What the data cannot answer
 
 - **Supply only:** network length and path type. Nothing on width, surface, continuity, gaps between segments, junction safety, parking conflicts or motor traffic.
 - **Demand is measured at 5 points only,** January to July 2026, with Arnulfstraße only to April and Margaretenstraße empty. None of this extrapolates to uncounted streets or districts.
 - **Path weights are assumptions,** not an official quality scale. The ranking moves when they change: setting shared footpaths to 0 takes Aubing in 2045 from 0.71× to 0.48×.
-- **Population after 2024 is interpolated** to the official 2045 forecast. Jobs are a modelled city estimate (2022 as the 2024 baseline, 2040 forecast, held after), not a count.
+- **Population after 2024 is interpolated** to the official 2045 forecast. Jobs are a modeled city estimate (2022 as the 2024 baseline, 2040 forecast, held after), not a count.
 - **The 2045 view assumes no new cycle paths.** No planned cycling projects are in the dataset.
 - Per-district figures leave out the 13 segments (4.9 km) that have no district.
 
 ## Checks run
 
-- SQL: raw total 1,049.36 km (1,044.48 km in districts); weighted 875.2 km; 2024 city average 0.3114 km per 1,000 activity at w = 1. Au-Haidhausen is 0.56× per person and 1.60× per km², Schwabing-West 0.88× and 2.13×. The largest 2045 decline is Aubing-Lochhausen-Langwied. Erhardtstraße averages 4,765 per day, Bad-Kreuther-Straße 686.
+- SQL: raw total 1,049.36 km (1,044.48 km in districts); weighted 875.2 km; 2024 city average 0.3114 km per 1,000 activity at w = 1. Au-Haidhausen is 0.56× per person and 1.60× per km², Schwabing-West 0.88× and 2.12×. The largest 2045 decline is Aubing-Lochhausen-Langwied. Erhardtstraße averages 4,765 per day, Bad-Kreuther-Straße 686.
 - Headless Chrome (own context, software WebGL): 15/15. 25 polygons, 5 counters and 1 no-data marker on first load. Changing the lens, the year, a path weight, the reset button and w each change the **drawn** map data, and the SQL foldout text follows (year, w and weights substituted). 2045 differs from 2026. Nothing scrolls by itself, including opening the foldout. No console errors.
 - Dash Server healthcheck: healthy (layout, dependencies, assets, data layer and SQL smoke on all four queries).

@@ -5,7 +5,7 @@ __pycache__/
 # portal download used only by scripts/prepare_dataset.py
 munich-open-data/
 munich-open-data.zip
-# the dataset is published as a GitHub release asset (see data/dataset.json), not in git
+# the dataset is published as a GitHub release asset (see data/README.md), not in git
 data/*.zip
 data/*.zip.part
 data/munich-dataset/
@@ -13,3 +13,5 @@ data/munich-dataset/
 secrets/*
 !secrets/README.md
 !secrets/openai_api_key.example
+.obsidian
+.claude

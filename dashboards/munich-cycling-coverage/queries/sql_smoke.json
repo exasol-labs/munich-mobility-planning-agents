@@ -1,6 +1,0 @@
-{
-  "queries/cycling.sql": {"year": 2045, "w_jobs": 1.0, "w_radweg": 1.0, "w_fahrradstrasse": 1.0, "w_getrennt": 0.8, "w_streifen": 0.6, "w_gemeinsam": 0.5, "w_gehweg": 0.3},
-  "queries/pathmix.sql": {},
-  "queries/counters.sql": {},
-  "queries/geo.sql": {}
-}

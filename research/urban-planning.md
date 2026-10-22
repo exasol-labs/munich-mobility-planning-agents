@@ -6,7 +6,7 @@ Findings for the dashboards `munich-mobility-planning-v1` to `-v5` on `MUNICH_DA
 
 **Answer.** Of the 9 densest districts, only Sendling-Westpark (7,964 residents/km², 62,240 residents) is flagged. It has 24,110 places offered per 1,000 residents, the lowest of all 25 districts, against 60,325 city-wide, and 153.2 departures per 1,000 against 249.4 city-wide. Its gap is +16 (density rank 9, places rank 25). Buses carry 54.6 % of its places (8,541 departures carry 819,560 places); U-Bahn carries 40.8 % (658 departures, 611,940 places). Schwabing-West, the densest district (15,724 residents/km²), has the next-largest gap among the dense districts (+14: places rank 15). It is not flagged only because it sits in the middle tercile, and it has the most residents per station (2,450). Untergiesing-Harlaching (+12, places rank 24) is under-served but only mid-density (6,710 residents/km²).
 
-**Service map.** The map shows service_ratio = places per 1,000 residents / city-wide places per 1,000 residents. It runs from Sendling-Westpark 0.40× (24,110 / 60,325) to Altstadt-Lehel 6.18×. Colours are clamped at 0.4 and 2.5 on a log scale centred on 1.0. The 9 densest districts are outlined.
+**Service map.** The map shows service_ratio = places per 1,000 residents / city-wide places per 1,000 residents. It runs from Sendling-Westpark 0.40× (24,110 / 60,325) to Altstadt-Lehel 6.18×. Colors are clamped at 0.4 and 2.5 on a log scale centered on 1.0. The 9 densest districts are outlined.
 
 **Method.** Gap = places_rank − density_rank, with rank 1 = highest, so a positive gap means denser than it is served. Flag = density NTILE(3) = 1 (9 districts) AND places-per-1,000 NTILE(3) = 3 (8 districts). The thresholds are a choice. Departures per 1,000 is shown as frequency. "Mostly bus" or "mostly rail" means the places and departures ranks differ by more than five places. Validation: stops by mode sum to 4,112 (equal to in_munich = 1); city totals 400,058 departures and 96,747,005 places.
 
@@ -26,11 +26,11 @@ Findings for the dashboards `munich-mobility-planning-v1` to `-v5` on `MUNICH_DA
 | Sendling | 10,410 | 2,050 | 65,062 | 225.8 | 7/8/15 | 1 | mostly rail |
 | Berg am Laim | 7,500 | 1,754 | 46,606 | 159.5 | 11/12/23 | 1 | mostly rail |
 | Schwanthalerhöhe | 13,855 | 1,793 | 131,400 | 319.2 | 3/3/6 | 0 | |
-| Pasing-Obermenzing | 4,959 | 1,076 | 43,132 | 291.7 | 18/17/8 | -1 | mostly bus |
 | Allach-Untermenzing | 2,345 | 710 | 37,100 | 232.5 | 23/22/13 | -1 | mostly bus |
 | Feldmoching-Hasenbergl | 2,203 | 1,250 | 35,686 | 186.0 | 24/23/21 | -1 | |
+| Pasing-Obermenzing | 4,959 | 1,076 | 43,132 | 291.7 | 19/17/8 | -2 | mostly bus |
 | Ludwigsvorstadt-Isarvorstadt | 11,378 | 1,391 | 172,405 | 392.7 | 5/2/2 | -3 | |
-| Milbertshofen-Am Hart | 5,760 | 1,267 | 49,067 | 230.5 | 15/11/14 | -4 | |
+| Milbertshofen-Am Hart | 5,760 | 1,267 | 49,067 | 230.5 | 16/11/14 | -5 | |
 | Trudering-Riem | 3,397 | 1,059 | 44,847 | 252.3 | 21/16/10 | -5 | mostly bus |
 | Bogenhausen | 4,026 | 1,038 | 46,232 | 322.1 | 20/14/5 | -6 | mostly bus |
 | Aubing-Lochhausen-Langwied | 1,791 | 911 | 42,321 | 240.7 | 25/18/11 | -7 | mostly bus |
@@ -42,7 +42,7 @@ Findings for the dashboards `munich-mobility-planning-v1` to `-v5` on `MUNICH_DA
 
 **Answer.** Counting jobs as well as residents (activity = residents + w × jobs 2022, w = 1), no district is in the top third for activity density and the bottom third for places offered per 1,000 activity. The one district flagged on residents alone, Sendling-Westpark, drops out: its 25,700 jobs leave it 13th for activity density (11,253 per km²), even though it stays last for supply (17,064 places per 1,000 activity against 34,425 city-wide). The largest gap among dense districts is Maxvorstadt (+12): second for activity density at 39,445 per km² because of its 117,100 jobs, but 14th for places at 29,040 per 1,000 activity, and mostly rail. At w = 0 the dashboard reproduces v1 exactly.
 
-**Service map.** At w = 1 the ratio runs from Sendling-Westpark 0.50× to Ludwigsvorstadt-Isarvorstadt 1.88× (Altstadt-Lehel 1.81×, Au-Haidhausen 1.74×, Schwanthalerhöhe 1.62×). Only 7 of the 25 districts are above the city average at w = 1, because the inner rail districts pull the average up.
+**Service map.** At w = 1 the ratio runs from Sendling-Westpark 0.50× to Ludwigsvorstadt-Isarvorstadt 1.88× (Altstadt-Lehel 1.81×, Au-Haidhausen 1.74×, Schwanthalerhöhe 1.62×). Only 8 of the 25 districts are above the city average at w = 1, because the inner rail districts pull the average up.
 
 **Method.** Activity = population + w × jobs_2022 (DISTRICT_EMPLOYMENT; input 0 to 1.5, default 1). Activity density = activity / area_km2. Gap = places-per-1,000-activity rank minus activity-density rank. Flag = activity-density NTILE(3) = 1 AND places NTILE(3) = 3. The same query also computes the w = 0 flag (residents per km², places per 1,000 residents), and `flag_change` marks any difference. City-wide: 1,603,776 residents, 1,206,600 jobs, 2,810,376 activity at w = 1, 9,044 activity per km².
 
@@ -79,7 +79,7 @@ Findings for the dashboards `munich-mobility-planning-v1` to `-v5` on `MUNICH_DA
 | Aubing-Lochhausen-Langwied | 1,791 | 2,555 | 26,000 | 29,675 | 168.8 | 42,321 | 25/12/4 | -13 | 0/0 | mostly bus |
 
 **Caveats.**
-- Jobs are a modelled 2022 estimate of workers at place of work (LHM Erwerbstätigenprognose 2025, empirica 2024, Tabelle 3), rounded to 100, not a count, and no licence is stated. The weight w is a choice: one job is not necessarily one resident's worth of trips.
+- Jobs are a modeled 2022 estimate of workers at place of work (LHM Erwerbstätigenprognose 2025, empirica 2024, Tabelle 3), rounded to 100, not a count, and no license is stated. The weight w is a choice: one job is not necessarily one resident's worth of trips.
 
 ## v3: forecast to 2045, if service stays as it is today
 
@@ -96,7 +96,7 @@ Only Untergiesing-Harlaching improves slightly (+0.5 %). On the flag rule (top t
 - Residents(Y) = pop_2024 + (pop_2045_forecast − pop_2024) × (Y − 2024) / 21, a linear interpolation: the Demografiebericht Teil 2 publishes district values for 2045 only.
 - Jobs(Y) = jobs_2022 + (jobs_2040 − jobs_2022) × (min(Y, 2040) − 2024) / 16. The city's 2022 estimate is used as the 2024 baseline, rising linearly to the 2040 forecast and held after 2040.
 - Supply is today's scheduled timetable, unchanged in every year.
-- The map colour is places per 1,000 activity in year Y divided by the 2024 city average at the same w, a fixed baseline.
+- The map color is places per 1,000 activity in year Y divided by the 2024 city average at the same w, a fixed baseline.
 
 Year 2024 equals v2 at every w: 34,425 city-wide, Sendling-Westpark 0.496, Ludwigsvorstadt-Isarvorstadt 1.882, no flags at w = 1. At w = 0: 60,325, Sendling-Westpark 0.40 and flagged.
 
@@ -118,15 +118,15 @@ Year 2024 equals v2 at every w: 34,425 city-wide, Sendling-Westpark 0.496, Ludwi
 
 **Caveats.**
 - Residents in intermediate years are interpolated, not forecast values. The forecast is Hauptwohnsitz only and its housing assumptions are a snapshot; Nordosten and Münchner Norden lie largely beyond 2045.
-- Jobs are a modelled estimate, with the 2022 value used as the 2024 baseline and held after 2040.
-- Supply is today's timetable. Funded projects (Tram 23/24 Neufreimann, Westtangente section 2, U5 Pasing) and planned ones (U5 Freiham, U4 Nordost) are not included; v4 adds them as scenarios.
+- Jobs are a modeled estimate, with the 2022 value used as the 2024 baseline and held after 2040.
+- Supply is today's timetable. Funded projects (Tram Münchner Norden part 1 with tram 23 to Kieferngarten, Westtangente section 2, U5 Pasing) and planned ones (U5 Freiham, U4 Ost) are not included; v4 adds them as scenarios.
 - Scheduled service only.
 
 ## v4: forecast with rail and tram scenarios
 
 **Answer.** By 2045 at w = 1, with no project switched on, city-wide supply falls from 34,425 to 29,822 places per 1,000 activity (−13.37 %). The six funded projects lift that to 32,069 (−6.84 %), which offsets 49 % of the decline. Everything discussed lifts it to 33,593 (−2.42 %), which offsets 82 %.
 
-The largest single contributor is the 2nd Stammstrecke, modelled as the new-tunnel trains plus a 15-minute basic interval on the existing S-Bahn network. It adds +5,272,800 places per weekday net: +3,237,600 from the five tunnel stations and +2,035,200 from lifting 53 Munich S-Bahn stations on S3, S4, S6 and S8 to at least 152 departures. S1 is already above 152; S2, S5, S7 and S20 are excluded. Nothing is removed from the existing trunk, so no central district loses supply: Schwanthalerhöhe (1.564 vs 1.523), Neuhausen-Nymphenburg (0.792 vs 0.776) and Maxvorstadt (0.777 = 0.777) end at or above their "none" values.
+The largest single contributor is the 2nd Stammstrecke, modeled as the new-tunnel trains plus a 15-minute basic interval on the existing S-Bahn network. It adds +5,272,800 places per weekday net: +3,237,600 from the five tunnel stations and +2,035,200 from lifting 53 Munich S-Bahn stations on S3, S4, S6 and S8 to at least 152 departures. S1 is already above 152; S2, S5, S7 and S20 are excluded. Nothing is removed from the existing trunk, so no central district loses supply: Schwanthalerhöhe (1.564 vs 1.523), Neuhausen-Nymphenburg (0.792 vs 0.776) and Maxvorstadt (0.777 = 0.777) end at or above their "none" values.
 
 The fastest-shrinking districts still gain little from funded projects: Feldmoching-Hasenbergl and Allach-Untermenzing get nothing, and Trudering-Riem and Bogenhausen only a few percent from the S-Bahn interval. Aubing-Lochhausen-Langwied gets +224,400 places per weekday from the interval on S8 (0.513 → 0.558) and reaches 0.851 only with the unfunded U5 Freiham, whose year is a placeholder.
 
@@ -167,7 +167,7 @@ Ratios are places per 1,000 activity divided by the 2024 city average (34,425) a
 - U5 Laimer Platz–Pasing +1,104,840 (analog U5, 2036)
 - U4 Ost +424,917 (analog U4, assumed 2040)
 - Tram-Westtangente +420,660 (frequency, 2028, risk 2031)
-- Laim inbound restored +312,000 (260 departures, 2028); with the 2nd trunk also on, the 15-minute rule at Laim is applied on the restored numbers, −300,000 (−250 departures)
+- Laim inbound restored +312,000 (260 departures, 2028); with the 2nd trunk also on, the 15-minute rule at Laim is applied to the restored numbers, −300,000 (−250 departures)
 - Tram Münchner Norden PFA 1 +280,440 (2031)
 - Tram Münchner Norden PFA 2 +280,440 (2031 placeholder)
 - Tram-Nordtangente +270,293 (analog 23, blocked)
@@ -184,7 +184,7 @@ Ratios are places per 1,000 activity divided by the 2024 city average (34,425) a
 - **Rule 3:** Laim inbound restored = today's outbound departures minus today's inbound ones, per line.
 - **Rule 4:** the 2nd trunk adds its 2017 start-concept tunnel lines at the 5 tunnel stations (Rule 1), removes nothing from the existing trunk (freed slots assumed reused), and applies a 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich it serves today, departures = GREATEST(today, 152), where 152 = 4 trains/h × 19 h × 2 directions. With Laim restored also on, the rule is applied after the restore. Station markers stay on the 5 tunnel stations.
 - **Rule 5:** a project counts from its model opening year, or its risk year when pessimistic. Pessimistic dates change the result only between opening and risk year.
-- **Where the rules live:** all rules are in SQL (the `need`, `sb`, `comps` and `sel` CTEs in `ranking.sql`, and `projects.sql`). With no project switched on, the output equals v3 (R1–R3 in [reference-numbers.md](reference-numbers.md)).
+- **Consistency:** with no project switched on, the output equals v3 (R1–R3 in [reference-numbers.md](reference-numbers.md)).
 
 **Caveats.**
 - Project frequencies are partly analog assumptions.
@@ -196,7 +196,7 @@ Ratios are places per 1,000 activity divided by the 2024 city average (34,425) a
 
 ## v5: ask the assistant
 
-v5 uses v4's model unchanged; its numbers are v4's. With no what-if, `ranking.sql` returns exactly the v4 output.
+v5 uses v4's model unchanged; its numbers are v4's. With no what-if, the model returns exactly the v4 output.
 
 - First load is the current year with w = 1.0 and no projects: on the reference date that is 2026, Munich overall −1.66 % (33,853 vs 34,425).
 - "Show 2045 with the funded projects" gives Funded only, 6 projects active, +7.3 M places per weekday net, Munich overall −6.84 % (R4).
@@ -204,18 +204,18 @@ v5 uses v4's model unchanged; its numbers are v4's. With no what-if, `ranking.sq
 - A frequency what-if reuses the 15-minute rule with the frequency as a parameter: extra places = (GREATEST(departures today, trains per hour × hours × 2) − departures today) × capacity per trip. "S4 at least 4 trains/h for 19 h" adds +729,600 places, the same as v4's 15-minute rule for S4.
 - A new-line what-if adds (peak × 6 + off-peak × 13) × 2 departures per station × the mode's capacity per trip.
 
-**Caveats.** A what-if is capacity arithmetic, not a plan: demand shifts, crowding, travel time, cost and feasibility are not modelled. It adds to supply in every year shown; departures and the 2024 baseline don't change.
+**Caveats.** A what-if is capacity arithmetic, not a plan: demand shifts, crowding, travel time, cost and feasibility are not modeled. It adds to supply in every year shown; departures and the 2024 baseline don't change.
 
 ## Method common to all versions
 
 - **Service set:** scheduled MVV GTFS service on the reference Wednesday (21 Oct 2026): 400,058 stop departures at stops in Munich.
 - **Capacity:** each departure is weighted by VEHICLE_CAPACITY places per trip (S-Bahn 1,200, U-Bahn 900, regional rail 500, tram 205, bus 90); LINE_CAPACITY overrides 8 U-Bahn, 1 tram and 14 bus lines.
-- **Areas:** the official `area_km2` (310.7 km² in total). The polygon `area_sqm` is about twice the official area for Thalkirchen-…-Solln (35.53 against 17.764 km²) and Untergiesing-Harlaching (16.11 against 8.057 km²), so it is not used.
-- **SQL:** every figure comes from the dashboards' own `queries/ranking.sql`, run read-only. v1–v4 share the same file; v5 adds the what-if input.
+- **Areas:** the official `area_km2` (310.7 km² in total), which matches the polygon `area_sqm` for every district.
+- **SQL:** every figure comes from one read-only model query, shared by v1–v4; v5 adds the what-if input.
 
 ## What the data cannot answer
 
 - Ridership, crowding and delays. MVV GTFS is scheduled service only, and places offered measure capacity, not use.
 - Capacities are planning values per mode, not the formation of each trip.
 - 24,218 stops with `in_munich = 0` are excluded from every figure; 4,112 stops in Munich are counted (1,116 stations).
-- Population is a point-in-time snapshot. Per-resident measures favour sparse outer districts.
+- Population is a point-in-time snapshot. Per-resident measures favor sparse outer districts.

@@ -1,4 +1,4 @@
-# Planned rail and tram projects in Munich: stations for scenario modelling (as of 19 Oct 2026)
+# Planned rail and tram projects in Munich: stations for scenario modeling (as of 19 Oct 2026)
 
 Companion to `pt_projects.csv`: 88 rows, 17 project_ids. The research was done in German, mostly from official sources. Each source is marked **[verified]** (I opened it and saw the fact) or **[unverified]** (seen only in search snippets or in secondary sources).
 
@@ -29,7 +29,7 @@ Companion to `pt_projects.csv`: 88 rows, 17 project_ids. The research was done i
 ## 3. U5 Laimer Platz–Pasing: 3 rows
 
 - **Stations [verified, ubahnbau-muenchen.de]:** Baumschule Laim (under Gotthardstraße between Willibald- and Reutterstraße, formerly "Willibaldstraße"), Am Knie, Pasing (under the DB station). 3.8 km, about €1.3 bn, €645.2 m in grants.
-- **Dates:** 2036 per Abendzeitung (Jun 2026) **[unverified, snippet]**. MVV's older page says "Anfang der 2030er". Construction is "im Plan".
+- **Dates:** 2036 per Abendzeitung (18 Jun 2026) **[verified article; press-reported, no official year]**. MVV's older page says "Anfang der 2030er" (outdated). Construction is "im Plan".
 - **Headway:** not published; analog U5.
 
 ## 4. U5 Pasing–Freiham: 4 rows
@@ -74,7 +74,7 @@ There is no final timetable. Bavaria (Landtag 17/17196) says the detailed timeta
 
 That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and Ostbahnhof, and 11 at Leuchtenbergring. Peak is set equal to off-peak because the concept is all-day and no peak extras are published.
 
-**Modelling caveats:**
+**Modeling caveats:**
 - These lines are *re-routed*: S1 and S6 leave the old trunk, so the old routings must be removed.
 - The 20→15-min change applies network-wide on most lines. That is outside this station list, but it is the biggest supply effect.
 - **Newer conflicting detail [verified, bahnblogstelle on the BEG tender, 2025]:** for the contract starting Dec 2034, S2 and S3 swap their eastern branches. The expansion for the 2nd trunk is a contract option, and the award is planned for 2029. The 2017 line numbers may therefore change.
@@ -82,7 +82,7 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 
 ## 6. Laim, inbound S3/S4/S6/S8 restored: 4 rows
 
-- **Facts:** The inbound stops are cancelled from 25 Aug 2026 to "mid-2028" because of the Laim rebuild. **[verified]** notice on 2.stammstrecke-muenchen.de; muenchen.de **[unverified snippet]**.
+- **Facts:** The inbound stops are canceled from 25 Aug 2026 to "mid-2028" because of the Laim rebuild. **[verified]** notice on 2.stammstrecke-muenchen.de; muenchen.de **[unverified snippet]**.
 - **How to model:** Use the outbound departures of the same line at Laim as a proxy for the restored inbound departures.
 
 ## 7. Tram Johanneskirchen: 2 rows
@@ -97,7 +97,7 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 
 - **Stations [verified, ubahnbau-muenchen.de]:** Münchner Freiheit, Elisabethplatz, Pinakotheken, Theresienstraße (U29 branch to U2), Hauptbahnhof, Esperantoplatz, and a new joint Impler-/Poccistraße station (Billigungsbeschluss Sep 2024). 10.5 km.
 - **New vs existing:** New are Elisabethplatz, Pinakotheken and Esperantoplatz. Existing nodes are Münchner Freiheit, Theresienstraße, Hbf and Impler-/Poccistraße.
-- **Status:** Preliminary planning, not financed, €3.5–4 bn+. The Hbf box is being pre-built with the 2nd trunk (city > €500 m).
+- **Status:** Preliminary planning, not financed, €3.5–4 bn+. The Hbf box is being pre-built with the 2nd trunk (€662.5 m including the U9 preliminary planning, of which €562.6 m for the shell structure; V 08143, Nov 2022).
 - **Staging proposal:** The Grüne motion of 29 Jan 2026 proposes staging Theresienstraße–Hbf–Implerstraße and questions Esperantoplatz.
 - **Date:** "2040s" comes from secondary sources only, so 2040 is a placeholder.
 
@@ -135,7 +135,7 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 
 ## Not included (and why)
 
-- **U6 Martinsried:** in Planegg, outside the city. Planned 2027.
+- **U6 Martinsried:** in Planegg, outside the city. Planned 2027 (MVG and Planegg project pages; on schedule as of Aug 2026).
 - **Tram depot access track Ständlerstraße:** no passenger stops. Plan approval 13 Feb 2026; target H2 2028, but work is suspended.
 - **U1 Nord and U1 Süd (Klinikum Harlaching, 2 unnamed stations):** studies only.
 - **S-Bahn halt Menterschwaige:** under study, with the experts recommending it. No plan.
@@ -183,10 +183,10 @@ That totals 15 trains/h/direction on the 2nd trunk at Laim, Hbf, Marienhof and O
 - https://tram-johanneskirchen.mvg.de/projekt.html
 - https://tram-johanneskirchen.mvg.de/kontakt-faq/faq-tjo/tjo7.html
 - https://tram-johanneskirchen.mvg.de/kontakt-faq/faq-tjo/tjo8.html
-- https://www.muenchen-transparent.de/dokumente/9490929/datei (Tram Johanneskirchen, BA 13, Feb 2026)
+- https://www.muenchen-transparent.de/dokumente/9490929/datei (Tram Johanneskirchen, V 18766, BA 13 decision of 10 Feb 2026)
 - https://www.muenchen-transparent.de/dokumente/8135927/datei (Nordtangente route decision, V 10202)
 - https://www.muenchen-transparent.de/dokumente/8902736/datei (Nordtangente frozen, Feb 2025)
-- https://www.muenchen-transparent.de/dokumente/9262805/datei (Nordtangente tunnel, Aug 2025)
+- https://www.muenchen-transparent.de/dokumente/9262805/datei (Nordtangente, MOR letter of 26 Aug 2025: surface route, no tunnel)
 - https://www.tramreport.de/2023/12/13/trassierungsbeschluss-tnt/
 - https://www.muenchen-transparent.de/dokumente/9530505/datei (U9 Grüne motion)
 - https://www.muenchen-transparent.de/dokumente/9550336/datei (Y-Nord system comparison)

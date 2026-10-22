@@ -1,81 +1,76 @@
-# AGENTS.md: run this tutorial end to end as an agent
+# AGENTS.md
 
-This repo is a tutorial that an AI coding agent (Claude Code, Codex, Cursor …) can execute on the user's behalf, step by step. Humans read [README.md](README.md) and [tutorial/](tutorial/). **Agents follow the steps below.** Every step has a command, a check that must pass before you continue, and a note where only the human can act.
+Standing instructions for an AI coding agent (Codex, Claude Code or another client) working in this repo. The repo is a tutorial: the user works through [tutorial/](tutorial/) and describes what they want to see. You decide how to build it. The repo contains no dashboard code; every dashboard is written by you, in the user's session.
 
-## Ground rules for the agent
-- Work from the repo root. Run the steps in order; don't skip a check. On a failure, read [tutorial/10-troubleshooting.md](tutorial/10-troubleshooting.md), apply the matching fix and re-run the check. If it still fails, stop and report.
-- **Never read, print, copy or ask for secrets.** The OpenAI key lives in `secrets/openai_api_key` (gitignored). Only test whether it exists. If the user offers to paste a key into the chat, tell them to put it in the file instead (see `secrets/README.md`).
-- **Database writes:** only `scripts/load_data.py` writes, and only into schema `MUNICH_DATASET`. All analysis SQL runs read-only through the `exasol` MCP server. Never `DROP` or reload a table unless the user asked for it, or `load_data.py --replace` is the documented fix.
-- **Dashboards live on Dash Server only:** never an artifact, an HTML file or an image.
-- **Verify dashboards like a browser:** use `scripts/check_dashboard.py`, not your own reading of the code.
-- **Metric units only.** State what the data can't answer: scheduled service, with no passengers or delays.
+- **Codex** and **Claude Code** read this file automatically when started in the repo folder.
 
-## Steps
+## Ground rules
 
-| # | Step | Do | Check (must pass) | Human needed? |
-|---|---|---|---|---|
-| 1 | Starter kit installed | `exakit status`. If `exakit` is missing, **stop**: the user runs the installer in [tutorial/01](tutorial/01-setup-starter-kit.md) §1.1 and selects *Claude* (MCP) and *dash-server* (marketplace). | `exakit status` shows the database `reachable` and `dash-server running` | **Yes**, the first install only (interactive, installs system software) |
-| 2 | Kit running | Not running → `exakit start`. Runtime "conflict" or a hung DB → `exakit stop && exakit start`. dash-server missing → `EXAKIT_MARKETPLACE_ADDONS=dash-server exakit marketplace`, then `exakit start`. | same as 1 | No |
-| 3 | MCP servers | In Claude Code, `/mcp` lists `exasol` and `dash-server`. Missing → `exakit mcp-setup`, then **the user restarts the agent session**. | both connected | Yes, if a restart is needed |
-| 4 | Data loaded | `python3 scripts/load_data.py`. It is idempotent: it downloads the zip from the GitHub release in `data/dataset.json` if it's missing, verifies the SHA-256, loads the missing tables and verifies all of them. If the download fails, e.g. offline, ask the user to download the zip from that URL into `data/`. | `python3 scripts/verify_data.py` exits 0 (20 tables, expected row counts) | No |
-| 5 | Agent installed | `python3 install.py` (agent, skills, Dash Server rule, key link) | `python3 install.py --check` (or `scripts/check_all.py`) shows no FAIL. A newly installed agent and skills load only in a new session: tell the user to restart if `urban-planning` isn't available. | Yes, if a restart is needed |
-| 6 | Model numbers | `python3 scripts/verify_numbers.py --case all` | R1–R6 match `tests/expected.json` | No |
-| 7–12 | Dashboards v1 → v5, then cycling | For each app in order: `munich-mobility-planning-v1` … `-v5`, `munich-cycling-coverage`, either **build** it (below) or **deploy** the finished version (below). | `python3 scripts/check_dashboard.py <app>` exits 0; the URL `http://127.0.0.1:5100/apps/<app>` opens | v5 only: the key must be in `secrets/openai_api_key` and the account must have credits. Otherwise deploy v5 anyway; its chat shows a setup line. |
-| 13 | Final check | `python3 scripts/check_all.py` | all OK | No |
+- **Dashboards run on Dash Server only.** Build them with the `dash-server` MCP tools. Don't produce a chat artifact, an HTML file, an image, an inline chart, a Streamlit or Flask app, or a Markdown table presented as a dashboard. If the dash-server tools are missing, follow [MCP servers missing](tutorial/10-troubleshooting.md#mcp-servers-missing) and ask the user to restart the session.
+- **SQL is read-only.** Run analysis SQL through the `exasol` MCP server, whose login can only read. You never write to the database. Loading data is the user's step (chapter 2).
+- **Show your work.** Show each SQL statement before you interpret its result. Explain modeling choices in plain words, and say which ones are assumptions.
+- **No secrets.** Don't read, print, copy or ask for the OpenAI key or the database password, and don't put them in files or on a command line. The key lives in `secrets/openai_api_key` (gitignored); you may only check that the file exists. If the user offers to paste a key into the chat, point them to [secrets/README.md](secrets/README.md).
+- **Metric units:** area in km², density in residents per km², lengths in m (km for city totals), durations in minutes. Never hectares, miles or feet.
+- **State the limits of the data** whenever a question touches them: the MVV data is the scheduled timetable, with no passengers, crowding, delays or live traffic. Jobs are a modeled estimate. Population between 2024 and 2045 is interpolated.
+- **Each version builds on the previous one.** When the user asks for the next version, start from the app you built before and keep what works.
 
-### Deploy a finished dashboard (Dash Server MCP tools)
-1. `apps_list`. If `<app>` doesn't exist: `app_create_exasol_dashboard{name: "<app>", profile_name: "starter-kit", title: "Munich Mobility Planning"}` (cycling: "Munich Cycling Coverage").
-2. Workspace: `~/.exasol-starter-kit/dash-server/instance/workspaces/_git_worktrees/<app>/apps/<app>/`. Delete the scaffold's `queries/business/` and `queries/system/`, which fail their own smoke test.
-3. Copy everything from `dashboards/<app>/` into the workspace with `cp -R`. Don't use `app_put_files`: it can drop non-breaking spaces. Keep the scaffold's `dash_server_exasol.py` if the repo has none.
-4. `app_deploy_draft{name: "<app>", deployment_target: "live", auto_rollback_on_health_failure: true}`, then `app_run_healthcheck{name: "<app>"}` must be healthy. Windows: `app_build` → `app_run_healthcheck` → `app_promote_revision`.
-5. `python3 scripts/check_dashboard.py <app>`.
-6. On a git conflict or the "20 parallel connections" error, wait a few seconds and retry once. After many deploys, run `exakit stop && exakit start`.
+## The data
 
-### Build a dashboard yourself (the tutorial path)
-Delegate to the `urban-planning` agent, or load its skill. Give it the spec `dashboards/<app>/README.md` and the previous version's folder as the starting point. It shows its SQL, builds, then deploys with the recipe above. Check the result with `scripts/check_dashboard.py` and `scripts/verify_numbers.py`. The prompts for each version are in tutorial chapters [04](tutorial/04-v1-residents.md)–[09](tutorial/09-cycling-series.md).
+Schema `MUNICH_DATASET`, 20 tables. [data/README.md](data/README.md) describes the tables and sources; [data/data-model.md](data/data-model.md) documents every column. Read the data model before the first query.
 
-### Report back to the user
-After each step, give one line: the step, the result and the URL (for dashboards). At the end, list all six URLs and anything skipped, such as v5 without a key, with the reason.
+**Where things are:**
+- Districts, their area, polygons and centroids: `DISTRICTS`. Population counts and the official 2045 forecast: `DISTRICT_POPULATION`. Jobs (2022 estimate and 2040 forecast): `DISTRICT_EMPLOYMENT`.
+- The scheduled timetable: the `MVV_*` GTFS tables. Capacity of one scheduled trip: `VEHICLE_CAPACITY` per mode, with per-line overrides in `LINE_CAPACITY`.
+- Planned rail and tram projects: `PT_PROJECT_STATIONS`, one row per station and line, with the research behind it in [research/pt-projects-notes.md](research/pt-projects-notes.md).
+- Cycling: `CYCLING_INFRASTRUCTURE`, `BIKE_COUNT_STATIONS`, `BIKE_COUNTS_DAILY`, `BIKE_COUNTS_15MIN`. Roadworks: `ROADWORKS`.
 
----
+**SQL quirks:**
+- Column names are lowercase and must be double-quoted (`"district_no"`). Schema and table names are upper case and unquoted.
+- Don't use reserved words such as `year`, `hour`, `day`, `value`, `count`, `type` or `name` as aliases.
+- The exasol MCP tool rejects a top-level `UNION ALL`; put it inside a CTE. For regular expressions use `REGEXP_INSTR(x, 'pattern') > 0`.
+- Every point table has `district_no` (1–25), so district rollups are equality joins.
+- For anything per district, use stops with `in_munich = 1`. `COALESCE("parent_station", "stop_id")` groups platforms into a station.
+- Use `MVV_ROUTES."line_mode"` (S-Bahn, U-Bahn, Regional rail, Tram, Bus), not `route_mode`.
 
-# The urban-planning agent
+**Facts to respect:**
+- **The reference weekday is Wednesday 21 Oct 2026.** The GTFS feed covers 1 Sep–30 Nov 2026. Use the services that run on that date (`MVV_CALENDAR` with `wednesday = 1` and the date in range, plus the additions and minus the removals in `MVV_CALENDAR_DATES`), so the numbers don't depend on the day the tutorial is run.
+- **A departure is weighted by capacity.** One scheduled trip offers the capacity of its line (`LINE_CAPACITY`) or, without an override, of its mode (`VEHICLE_CAPACITY`). These are planning values, not passengers.
+- **Population and jobs:** residents are counted for 2015, 2024 and 2025 and forecast for 2045; jobs are estimated for 2022 and forecast for 2040. The model starts from the 2024 count (jobs: the 2022 estimate as the 2024 baseline) and interpolates linearly to 2045 (jobs to 2040), so the 2025 count is not used. Jobs after 2040 stay at the 2040 value.
+- **Projects** have an opening year (`opening_year_model`, 2040 where none is published), sometimes a later risk year, a status and a funding flag. Service comes from a published frequency (trains per hour, peak and off-peak, per direction) or, without one, from an existing analog line. Rows with `station_name = 'unknown'` have no published stations.
 
-One data foundation, one analyst persona, one rule: **every answer is SQL you can read, and every dashboard is a Dash Server app you can open.**
+## Building on Dash Server
 
-- **Data:** schema `MUNICH_DATASET` in the local Exasol Personal database, loaded by `scripts/load_data.py` from the release asset named in `data/dataset.json`. Tables and columns: [the data model](skill/munich-mobility-agents/references/data-model.md).
-- **Access:** the read-only `exasol` MCP login. The agent can read everything and change nothing; the database enforces it.
-- **Method:** ASK → INSPECT (show the SQL) → RUN → VALIDATE (sanity-check counts, say what the data can't answer) → RERUN.
-- **Output:** a short written finding with the SQL and result tables, and a dashboard on **Dash Server** built through the `dash-server` MCP tools. Never a chat artifact, an HTML file, an inline chart or a Markdown-only "dashboard".
-- **Units:** metric, one scale per quantity: area in km², density in residents per km², lengths in m (km for city totals), durations in minutes. Never hectares, miles or feet.
-- **Honesty:** MVV data is *scheduled* service, with no passengers, delays or live traffic. Jobs are a modelled estimate. Population between 2024 and 2045 is interpolated. The agent says so whenever a question drifts there.
+1. `apps_list`. If the app doesn't exist: `app_create_exasol_dashboard` with profile `starter-kit`. Never create a second app for the same version.
+2. Delete the scaffold's sample queries (`queries/business/*`, `queries/system/*`) with `app_delete_file`; one of them fails its own smoke test.
+3. Write the files with `app_put_files`. Put queries in `queries/*.sql` with pyexasol placeholders (`{year!d}`, `{w!f}`, `{ids!s}`) and sample values in `queries/sql_smoke.json` for the healthcheck. Run them with the helper the scaffold writes (`dash_server_exasol.py`); never write a connection, DSN or password into the app. Use plain ASCII spaces in code: `app_put_files` can drop non-breaking spaces.
+4. To start from the previous version, read its files with `app_list_files` and `app_read_file`.
+5. `app_deploy_draft{name, deployment_target: "live", auto_rollback_on_health_failure: true}`, then `app_run_healthcheck`. On Windows: `app_build` → `app_run_healthcheck` → `app_promote_revision`.
+6. If something fails, read `app_tail_logs` or `app_inspect_traceback`, fix and deploy again. On "license limit of 20 parallel connections" or a git conflict, wait a few seconds and retry once.
+7. Give the user the URL, `http://127.0.0.1:5100/apps/<app>` (the port is in `exakit status --json`).
 
-## The question
-How well is each Munich district served by public transport, now and to 2045, and what do the planned projects change?
+**Dash pitfalls:**
+- On the initial callback, give every output the first view depends on a concrete value. `no_update` there leaves the page blank.
+- Break loops between a store and the controls with `ctx.triggered_id`.
+- Don't scroll the page from a callback.
+- To test a page in a headless browser, start Chrome with software WebGL (SwiftShader), or maps stay empty. Use a separate browser profile, never the user's open tabs.
 
-The decision it supports: a district whose scheduled capacity per person falls well below the city average, especially a dense one, gets a planning review.
+**Every dashboard in the tutorial:**
+- uses the same look as the ones before it, so the series reads as one product;
+- ends with an "SQL executed" foldout that lists each statement the page ran, with its parameters, rows and duration, and the SQL text as sent;
+- carries a short caveat line on what the data can't say.
 
-## The measure
-- **Places offered** = scheduled weekday departures × capacity per trip. The capacity comes from `LINE_CAPACITY` if present, else `VEHICLE_CAPACITY` by `line_mode`, counted at stops inside Munich (`in_munich = 1`), on the reference weekday, pinned to Wednesday 21 Oct 2026.
-- **Activity** = residents + w × jobs. In the forecast, residents are interpolated to the official 2045 forecast, and jobs rise from the 2022 estimate, taken as the 2024 baseline, to the 2040 forecast and are held after 2040.
-- **Service ratio** = places per 1,000 activity ÷ the 2024 city average. Map colours: log scale centred on 1.0×.
-- **Scenarios:** projects from `PT_PROJECT_STATIONS` add departures from their opening year. The 2nd Stammstrecke adds the new-tunnel trains plus at least 15-minute service on S-Bahn lines other than S2, S5, S7 and S20.
+## Checking results
 
-## The dashboard series
-| App | Adds | Spec |
-|---|---|---|
-| `munich-mobility-planning-v1` | today, per resident | [README](dashboards/munich-mobility-planning-v1/README.md) |
-| `munich-mobility-planning-v2` | + jobs (w) | [README](dashboards/munich-mobility-planning-v2/README.md) |
-| `munich-mobility-planning-v3` | + forecast to 2045 | [README](dashboards/munich-mobility-planning-v3/README.md) |
-| `munich-mobility-planning-v4` | + rail and tram scenarios | [README](dashboards/munich-mobility-planning-v4/README.md) |
-| `munich-mobility-planning-v5` | + AI assistant (OpenAI) | [README](dashboards/munich-mobility-planning-v5/README.md) |
-| `munich-cycling-coverage` | a new series: cycling network per person and per km² | [README](dashboards/munich-cycling-coverage/README.md) |
+[research/reference-numbers.md](research/reference-numbers.md) has the numbers from one worked implementation of the tutorial. Your modeling choices may differ, so treat them as a reference: compare, and when you are far off, explain which choice causes the difference and let the user decide.
 
-Every dashboard ends with an "SQL executed" foldout listing each statement it ran.
+## Running the whole tutorial
 
-## Guardrail demonstrations
-| Ask | Expected behaviour |
+When the user asks you to run the tutorial end to end, work through the chapters in order. Use each chapter's prompts as the user's requests and its **Look at it** section to check your result. Stop where only the user can act: installing the kit (chapter 1), restarting the session after `exakit mcp-setup`, downloading and loading the data (chapter 2), and putting the OpenAI key in place (chapter 8). Without a key, build v5 anyway and show a setup line where the assistant would be. After each chapter, report one line: what you built and the URL. At the end, list all URLs and anything skipped, with the reason.
+
+## Guardrails
+
+| The user asks | Expected behavior |
 |---|---|
-| "Delete the roadworks that have already finished." | Refuses: the login is read-only. Offers a filtered query instead. |
-| "Which district has the worst traffic right now?" | Says there is no live traffic, delay or passenger data. Offers the scheduled-service view. |
-| "Create a dashboard." (nothing else) | Asks one clarifying question, then builds it on Dash Server, never as an artifact or inline chart. |
+| "Delete the roadworks that have already finished." | Refuse: the login is read-only. Offer a filtered `SELECT` instead. |
+| "Which district has the worst traffic right now?" | Explain that there is no live traffic, delay or passenger data. Offer the scheduled-service view. |
+| "Create a dashboard." (nothing else) | Ask one clarifying question, then build it on Dash Server. |

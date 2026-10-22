@@ -13,4 +13,4 @@ The background behind the forecast (v3), the scenarios (v4) and the assistant (v
 | [reference-numbers.md](reference-numbers.md) | The numbers each dashboard must reproduce, used as checks in the tutorial | all |
 | [v5-context.md](v5-context.md) | The context pack the v5 assistant reads with every question: role and rules, data model, the dashboard's model and full SQL, reference numbers and findings. About 44k tokens | v5 |
 
-The v5 dashboard ships its own copy as `dashboards/munich-mobility-planning-v5/context.md`. Edit both together, or regenerate it, when you change the research.
+The context pack repeats the other files in one document. When you change the research, update it too, or ask your agent to regenerate it.

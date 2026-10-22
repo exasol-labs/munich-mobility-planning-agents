@@ -1,8 +1,13 @@
 # Reference numbers
 
-Computed with `dashboards/munich-mobility-planning-v4/queries/ranking.sql`, reference weekday 2026-10-21 (`scripts/verify_numbers.py` pins it; expected values in `tests/expected.json`).
+Results of one worked implementation of the model in the tutorial, on the reference weekday Wednesday 21 Oct 2026, without pessimistic dates. Use them as a reference: an implementation that makes other modeling choices will land elsewhere, and the difference should be explainable by those choices. All values are scheduled service (places offered = departures × capacity per trip), not passengers.
 
-The query runs read-only with its placeholders substituted (`pessimistic = 0` throughout). All values are scheduled service (places offered = departures x capacity per trip), not passengers.
+The worked implementation:
+- counts every scheduled stop event at a stop inside Munich once, in the stop's district, with the capacity of its line (or mode);
+- interpolates residents linearly from 2024 to the 2045 forecast and jobs from the 2022 estimate (as the 2024 baseline) to the 2040 forecast, held after 2040;
+- compares each district with the 2024 city average at the same job weight w;
+- adds project service from the opening year: published frequency × (6 peak + 13 off-peak hours) × 2 directions, or the mean departures per station of an analog line;
+- for the 2nd Stammstrecke, adds the new-tunnel trains and lifts every S-Bahn line except S2, S5, S7 and S20 to at least 152 departures per Munich station (4 trains/h × 19 h × 2 directions), removing nothing.
 
 ## Data checks
 
@@ -25,7 +30,7 @@ The query runs read-only with its placeholders substituted (`pessimistic = 0` th
 | R5 | 2045 | 1 | Everything discussed | city 33,593 vs 34,425 = -2.42 %; net +12,232,618 places per weekday |
 | R6 | 2045 | 1 | stammstrecke2 only | city 31,448 vs 34,425 = -8.65 %; net +5,272,800 places per weekday |
 
-"Funded only" (from `preset_ids(projects, "funded")` = projects with `funded = 1`): laim_inbound_restore, sbahn_berduxstrasse, stammstrecke2, tram_muenchner_norden_1, tram_westtangente_2, u5_pasing.
+"Funded only" = the projects with `funded = 1`: laim_inbound_restore, sbahn_berduxstrasse, stammstrecke2, tram_muenchner_norden_1, tram_westtangente_2, u5_pasing.
 
 The ratio is `service_ratio` = district places per 1,000 activity / 2024 city average at the same w. The city % is the bar "Munich overall" in "Change since 2024" (the app computes it from the rounded city values; the result is the same either way).
 
@@ -99,7 +104,7 @@ City: 29,822 (2045) vs 34,425 (2024) = -13.37 %. Lowest: Aubing-Lochhausen-Langw
 
 ## The 2nd Stammstrecke in the model
 
-When `stammstrecke2` is active: (1) the 5 new-tunnel stations from `PT_PROJECT_STATIONS` are added by the frequency method; (2) S1/S6 departures on the existing trunk are not removed (the slots are reused); (3) 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich the line serves today, `departures_new = GREATEST(departures_today, 152)`, places = difference x capacity per trip (1,200 for every S-Bahn line); (4) with `laim_inbound_restore` also active, the 15-minute rule is applied on the restored numbers at Laim (S3/S4/S6/S8: -250 departures adjustment, nothing counted twice). S5 is excluded because it is a later reinforcement line, not part of the 2017 concept. The rule sits in the `sb` CTE of `ranking.sql` and `projects.sql` (`line NOT IN ('S2', 'S5', 'S7', 'S20')`). R1-R3 do not use projects and are unaffected (0 places added; sum of the 25 ratios 30.160 / 25.413 / 22.535).
+When `stammstrecke2` is active: (1) the 5 new-tunnel stations from `PT_PROJECT_STATIONS` are added by the frequency method; (2) S1/S6 departures on the existing trunk are not removed (the slots are reused); (3) 15-minute basic interval: for every S-Bahn line except S2, S5, S7 and S20, at every station inside Munich the line serves today, `departures_new = GREATEST(departures_today, 152)`, places = difference x capacity per trip (1,200 for every S-Bahn line); (4) with `laim_inbound_restore` also active, the 15-minute rule is applied to the restored numbers at Laim (S3/S4/S6/S8: -250 departures adjustment, nothing counted twice). S5 is excluded because it is a later reinforcement line, not part of the 2017 concept. R1-R3 do not use projects and are unaffected (0 places added; sum of the 25 ratios 30.160 / 25.413 / 22.535).
 
 Lines in the feed: S1, S2, S20, S3, S4, S5, S6, S7, S8. Upgraded lines (S-Bahn stations inside Munich served today / lifted to 152 / places added per weekday): S1 14 / 0 / 0 (235 departures everywhere already); S3 16 / 4 / +88,800; S4 16 / 16 / +729,600; S6 15 / 15 / +655,200; S8 18 / 18 / +561,600. Total 79 stations, 53 lifted, +1,696 departures, +2,035,200 places.
 
@@ -121,7 +126,7 @@ City 32,069 vs 34,425 = **-6.84 %**; net +7,290,222 places per weekday (dashboar
 
 ## R5: 2045, w = 1, Everything discussed
 
-City 33,593 vs 34,425 = **-2.42 %**; 14 of 17 projects open by 2045; net +12,232,618 places per weekday (dashboard: "+12.2 M places/day net").
+City 33,593 vs 34,425 = **-2.42 %**; 14 of 17 projects active by 2045 (open and with published stations; the other 3 have no stations and add nothing); net +12,232,618 places per weekday (dashboard: "+12.2 M places/day net").
 
 ## R4/R5: None / Funded only / Everything discussed at 2045, w = 1, all 25 districts (sorted by the Funded ratio)
 

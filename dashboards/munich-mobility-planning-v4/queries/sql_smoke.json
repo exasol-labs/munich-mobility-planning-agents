@@ -1,5 +1,0 @@
-{
-  "queries/ranking.sql": {"w_jobs": 1.0, "year": 2045, "projects": "stammstrecke2,laim_inbound_restore,u5_pasing", "pessimistic": 0},
-  "queries/projects.sql": {},
-  "queries/geo.sql": {}
-}
