@@ -1,21 +1,10 @@
 # Munich Mobility: a hands-on tutorial for AI-assisted analytics on Exasol Personal
 
-You load open data from the City of Munich into a local Exasol database on your laptop. Then you work with an AI coding agent, Codex or Claude Code, to build a series of live dashboards that answer one planning question, step by step:
+You load open data from the City of Munich into a local [Exasol](https://www.exasol.com) database on your laptop. Then you work with an AI coding agent, Codex or Claude Code, to build a series of live dashboards that answer one planning question, step by step:
 
 > **How well is each Munich district served by public transport, now and as the city grows to 2045, and what do the planned rail and tram projects change?**
 
 You describe what you want to see and why; the agent writes the SQL and the dashboards. The only prerequisite is the **[Exasol Personal Local Starter Kit](https://github.com/exasol-labs/exasol-personal-local-starterkit)**. The dataset is an 18 MB zip on this repo's [Releases page](https://github.com/exasol-labs/munich-mobility-planning-agents/releases).
-
-## The dashboards you'll build
-
-| Dashboard | What it adds | Chapter |
-|---|---|---|
-| `munich-mobility-planning-v1` | Today: public transport capacity per resident, district by district, on a map | [04](tutorial/04-v1-residents.md) |
-| `munich-mobility-planning-v2` | Residents **plus jobs**: districts people travel *to* | [05](tutorial/05-v2-jobs.md) |
-| `munich-mobility-planning-v3` | A **forecast to 2045** if nothing is added: year slider, change since 2024 | [06](tutorial/06-v3-forecast.md) |
-| `munich-mobility-planning-v4` | **Rail and tram projects** as switchable scenarios (U5, Tram-Westtangente, 2nd Stammstrecke …) | [07](tutorial/07-v4-scenarios.md) |
-| `munich-mobility-planning-v5` | An **AI assistant** on the page that answers questions, computes what-ifs and changes the view | [08](tutorial/08-v5-assistant.md) |
-| `munich-cycling-coverage` | The **cycling** network per person and per km²: the start of a new series for you to continue | [09](tutorial/09-cycling-series.md) |
 
 ## The path
 
@@ -39,6 +28,7 @@ You describe what you want to see and why; the agent writes the SQL and the dash
 | [data/](data/README.md) | The table reference, the data model, sources and licenses, and the curated list of rail and tram projects |
 | [research/](research/README.md) | The research behind the forecast and the scenarios, the reference numbers, and the context pack for the v5 assistant |
 | [secrets/](secrets/README.md) | Where your OpenAI key goes (gitignored) |
+| [slides/](slides/README.md) | The meetup deck: content in Markdown, built into PowerPoint by Claude on the Exasol template |
 | [scripts/prepare_dataset.py](scripts/prepare_dataset.py) | Optional: rebuilds the dataset from the Munich open data portal download |
 
 ## About the data

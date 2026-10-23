@@ -64,8 +64,7 @@ Ask, and watch what happens to the map and to "SQL executed":
 ## Understand it
 
 ```text
-Explain the assistant you built: what it gets as context, which tools it has, how you stop it from writing to
-the database, and what happens to the conversation when I reload the page.
+Explain the assistant you built: what it gets as context, which tools it has, how you stop it from writing to the database, and what happens to the conversation when I reload the page.
 ```
 
 ## What the data can't tell you
