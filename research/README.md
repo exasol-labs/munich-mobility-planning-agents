@@ -10,7 +10,7 @@ The background behind the forecast (v3), the scenarios (v4) and the assistant (v
 | [plans-research.md](plans-research.md) | The same research as an assessed summary: what is funded, what is stalled, what it means per district | v4, v5 |
 | [pt-projects-notes.md](pt-projects-notes.md) | Per project: stations, opening years, frequencies and the 2nd Stammstrecke operating concept, behind `data/source/pt_projects.csv` | v4 |
 | [cycling-coverage.md](cycling-coverage.md) | Findings of the cycling dashboard | cycling |
-| [reference-numbers.md](reference-numbers.md) | The numbers each dashboard must reproduce, used as checks in the tutorial | all |
+| [reference-numbers.md](reference-numbers.md) | Results of one worked implementation, to compare your own numbers against | all |
 | [v5-context.md](v5-context.md) | The context pack the v5 assistant reads with every question: role and rules, data model, the dashboard's model and full SQL, reference numbers and findings. About 44k tokens | v5 |
 
 The context pack repeats the other files in one document. When you change the research, update it too, or ask your agent to regenerate it.
