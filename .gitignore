@@ -15,6 +15,4 @@ secrets/*
 !secrets/openai_api_key.example
 .obsidian
 .claude
-# generated slide decks
-slides/build/
 temp/

@@ -43,7 +43,6 @@ You describe what you want to see and why; the agent writes the SQL and the dash
 | [data/](data/README.md) | The table reference, the data model, sources and licenses, and the curated list of rail and tram projects |
 | [research/](research/README.md) | The research behind the forecast and the scenarios, the reference numbers, and the context pack for the v5 assistant |
 | [secrets/](secrets/README.md) | Where your OpenAI key goes (gitignored) |
-| [slides/](slides/README.md) | The meetup deck: content in Markdown, built into PowerPoint by Claude on the Exasol template |
 | [scripts/prepare_dataset.py](scripts/prepare_dataset.py) | Optional: rebuilds the dataset from the Munich open data portal download |
 
 ## About the data
