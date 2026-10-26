@@ -17,3 +17,4 @@ secrets/*
 .claude
 # generated slide decks
 slides/build/
+temp/

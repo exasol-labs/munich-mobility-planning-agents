@@ -6,6 +6,12 @@ You load open data from the City of Munich into a local [Exasol](https://www.exa
 
 You describe what you want to see and why; the agent writes the SQL and the dashboards. The only prerequisite is the **[Exasol Personal Local Starter Kit](https://github.com/exasol-labs/exasol-personal-local-starterkit)**. The dataset is an 18 MB zip on this repo's [Releases page](https://github.com/exasol-labs/munich-mobility-planning-agents/releases).
 
+<p align="center">
+  <img src="docs/dashboard-v5.png" width="640" alt="The v5 dashboard for 2045: a map of the 25 districts colored by public transport places per resident and job against the 2024 average, the 'Change since 2024' chart, and an Ask panel. The assistant has put a hypothetical U-Bahn ring and 10-minute S-Bahn service on the map.">
+  <br>
+  <em>The dashboard after the totorial is complete. The assistant has put a hypothetical what-if on the map: a U-Bahn ring and S-Bahn trains every 10 minutes.</em>
+</p>
+
 ## The path
 
 1. [Set up the Exasol Personal Local Starter Kit](tutorial/01-setup-starter-kit.md): database, Dash Server, your agent connected over MCP
